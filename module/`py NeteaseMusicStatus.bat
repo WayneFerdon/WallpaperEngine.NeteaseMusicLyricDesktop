@@ -1,0 +1,2 @@
+py NeteaseMusicStatus.pyw
+pause

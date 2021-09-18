@@ -3,48 +3,43 @@ import json
 import re
 import os
 from os.path import expanduser
-from typing import DefaultDict, List
 import requests
 import time
 import sqlite3
 from enum import Enum
+from pykakasi import kakasi
 
-from pykakasi import kakasi, wakati
-
-localAppData = os.getenv("LOCALAPPDATA")
-LogPath = expanduser(localAppData + r"\Netease\CloudMusic\cloudmusic.log")
-MusicDataPath = expanduser(
-    localAppData + r"\Netease\CloudMusic\Library\webdb.dat")
+APPDATA = os.getenv("LOCALAPPDATA")
+LOGPATH = expanduser(APPDATA + "/Netease/CloudMusic/cloudmusic.log")
+DATABASE = expanduser(APPDATA + "/Netease/CloudMusic/Library/webdb.dat")
+OUTPUT = 'OutPut.html'
+HEADERS = {
+    'user-agent':
+    'Mozilla/5.0 (Windows NT 10.0; Win64;\x64)\
+            AppleWebKit/537.36 (KHTML,like Gecko)\
+            Chrome/80.0.3987.87 Safari/537.36'
+}
 
 
 class PlayState(Enum):
-    Stopped = 0
-    Playing = 1
-    Exited = 2
+    STOPPED = 0
+    PLAYING = 1
+    EXITED = 2
 
 
 class LogValidInfo(Enum):
-    NotValid = 0
-    AppExit = 1
-    Play = 2
-    Load = 3
-    SetPosition = 4
-    Resume = 5
-    Pause = 6
+    NONE = 0
+    APPEXIT = 1
+    PLAY = 2
+    LOAD = 3
+    SETPOS = 4
+    RESUME = 5
+    PAUSE = 6
 
 
 class NeteaseMusicStatus:
     def __init__(self):
-        self.MonitorPath = LogPath
-        self.OutPutPath = r'.\OutPut.html'
-        self.PlayState = PlayState.Stopped
-
-        self.Headers = {
-            'user-agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64;\x64)\
-            AppleWebKit/537.36 (KHTML,like Gecko)\
-            Chrome/80.0.3987.87 Safari/537.36'
-        }
+        self.PlayState = PlayState.STOPPED
         self.CurrentSong = False
         self.CurrentSongLrc = dict()
         self.CurrentSongLength = 0
@@ -53,8 +48,6 @@ class NeteaseMusicStatus:
         self.LastResumeTime = 0
         self.LastPauseTime = 0
         self.LastPosition = 0
-
-        self.TryCount = 0
         self.CurrentLrc = [
             {'Lrc': '', 'Translation': ''},
             {'Lrc': '', 'Translation': ''},
@@ -64,8 +57,6 @@ class NeteaseMusicStatus:
 
         self.SongLrcKeyTime = list()
         self.OutPutHtml = str()
-        self.Kakasi = kakasi()
-        self.Wakati = wakati().getConverter()
         self.LocalMusicInfo = LoadSongDataBase()
 
         with open("./Hanzi2Kanji.json", "r") as KanjiLib:
@@ -76,8 +67,8 @@ class NeteaseMusicStatus:
         self.Hanzi2KanjiLib = json.loads(LibJson)
 
         try:
-            self.LogFile = open(self.MonitorPath, 'r', encoding='utf-8')
-            self.FileSize = os.path.getsize(self.MonitorPath)
+            self.LogFile = open(LOGPATH, 'r', encoding='utf-8')
+            self.FileSize = os.path.getsize(LOGPATH)
             self.LogFile.seek(0, 2)
         except Exception:
             raise
@@ -95,30 +86,19 @@ class NeteaseMusicStatus:
                         pass
                 except IndexError:
                     break
-        with open(self.OutPutPath, 'w', encoding='utf-8') as OutPutFile:
+        with open(OUTPUT, 'w', encoding='utf-8') as OutPutFile:
             OutPutFile.write('')
 
         if self.CurrentSong:
             CurrentTimePosition = self.LastPosition
-            if self.PlayState == PlayState.Playing:
+            if self.PlayState == PlayState.PLAYING:
                 CurrentTimePosition += time.time() - self.LastResumeTime
             self.GetLrc()
             self.SetCurrentLrc(CurrentTimePosition)
             self.OutPutCurrentLrc()
 
-    def GetKakasiConvert(self, Source, Mode):
-        # Hiragana to ascii, default: no conversion
-        self.Kakasi.setMode("H", Mode)
-        # Katakana to ascii, default: no conversion
-        self.Kakasi.setMode("K", Mode)
-        # Japanese to ascii, default: no conversion
-        self.Kakasi.setMode("J", Mode)
-        self.Kakasi.setMode("s", True)  # add space, default: no separator
-        self.Kakasi.setMode("C", True)  # capitalize, default: no capitalize
-        return self.Kakasi.getConverter().do(Source)
-
     def GetLastLines(self, Length):
-        FilePath = self.MonitorPath
+        FilePath = LOGPATH
         try:
             FileSize = os.path.getsize(FilePath)
             if FileSize == 0:
@@ -163,7 +143,7 @@ class NeteaseMusicStatus:
             Url = 'https://music.163.com/api/song/detail/' \
                   '?id=' + str(self.CurrentSong) + \
                   '&ids=[' + str(self.CurrentSong) + ']'
-            JsonDate = json.loads(requests.get(Url, headers=self.Headers).text)
+            JsonDate = json.loads(requests.get(Url, headers=HEADERS).text)
             JsonDate = JsonDate['songs'][0]
             SongName = JsonDate['name']
             Artists = JsonDate['artists']
@@ -183,23 +163,23 @@ class NeteaseMusicStatus:
 
     def ReloadMonitorPath(self):
         try:
-            self.LogFile = open(self.MonitorPath, "rb")
-            self.FileSize = os.path.getsize(self.MonitorPath)
+            self.LogFile = open(LOGPATH, "rb")
+            self.FileSize = os.path.getsize(LOGPATH)
             self.LogFile.seek(0, 1)
             return True
         except Exception:
             return False
 
     def CallbackLog(self, Content, Initializing=False):
-        ValidInfo = LogValidInfo.NotValid
+        ValidInfo = LogValidInfo.NONE
         LogTime = 0
 
         if 'App exit' in Content:
-            if self.PlayState == PlayState.Playing:
+            if self.PlayState == PlayState.PLAYING:
                 self.LastPosition += time.time() - self.LastResumeTime
-            self.PlayState = PlayState.Exited
+            self.PlayState = PlayState.EXITED
             LogTime = time.time()
-            ValidInfo = LogValidInfo.AppExit
+            ValidInfo = LogValidInfo.APPEXIT
 
         elif "[info]" in Content:
             Content = Content.strip().strip('\n')
@@ -213,36 +193,36 @@ class NeteaseMusicStatus:
                 self.CurrentSong = re.split('_', re.split('"', LogInfo)[1])[0]
                 if not Initializing:
                     self.GetLrc()
-                if self.PlayState != PlayState.Exited:
+                if self.PlayState != PlayState.EXITED:
                     self.LastPosition = 0
 
                 # require load and resume
-                self.PlayState = PlayState.Stopped
-                ValidInfo = LogValidInfo.Play
+                self.PlayState = PlayState.STOPPED
+                ValidInfo = LogValidInfo.PLAY
             elif '__onAudioPlayerLoad' in LogInfo:
                 self.CurrentSongLength = json.loads(
                     re.split('\t', LogInfo)[0])['duration']
-                ValidInfo = LogValidInfo.Load
+                ValidInfo = LogValidInfo.LOAD
             elif '_$setPosition' in LogInfo:
                 self.LastPosition = json.loads(re.split('\t', LogInfo)[0])[
                     'ratio'] * self.CurrentSongLength
-                ValidInfo = LogValidInfo.SetPosition
-                if self.PlayState == PlayState.Playing:
+                ValidInfo = LogValidInfo.SETPOS
+                if self.PlayState == PlayState.PLAYING:
                     if Initializing:
                         self.LastResumeTime = LogTime
                     else:
                         self.LastResumeTime = time.time()
             elif 'player._$resume do' in LogInfo:
-                self.PlayState = PlayState.Playing
+                self.PlayState = PlayState.PLAYING
                 self.LastResumeTime = LogTime
-                ValidInfo = LogValidInfo.Resume
+                ValidInfo = LogValidInfo.RESUME
             elif 'player._$pause do' in LogInfo:
-                ValidInfo = LogValidInfo.Pause
-                if self.PlayState == PlayState.Playing:
-                    self.PlayState = PlayState.Stopped
+                ValidInfo = LogValidInfo.PAUSE
+                if self.PlayState == PlayState.PLAYING:
+                    self.PlayState = PlayState.STOPPED
                     self.LastPosition += LogTime - self.LastResumeTime
                     self.LastPauseTime = LogTime
-        if ValidInfo == LogValidInfo.NotValid:
+        if ValidInfo == LogValidInfo.NONE:
             return False
         if Initializing:
             if (
@@ -253,29 +233,30 @@ class NeteaseMusicStatus:
                 return True
             self.LastUpdate = LogTime
             return False
-        if ValidInfo in [LogValidInfo.SetPosition, LogValidInfo.Resume]:
+        if ValidInfo in [LogValidInfo.SETPOS, LogValidInfo.RESUME]:
             self.SetCurrentLrc(self.LastPosition)
             self.OutPutCurrentLrc()
-        if ValidInfo == LogValidInfo.AppExit:
-            with open(self.OutPutPath, 'w', encoding='utf-8') as OutPutFile:
+        if ValidInfo == LogValidInfo.APPEXIT:
+            with open(OUTPUT, 'w', encoding='utf-8') as OutPutFile:
                 OutPutFile.write('')
         return True
 
     def Start(self, Interval=0.001):
-        LogFile = self.MonitorPath
+        LogFile = LOGPATH
         while True:
             FileSize = os.path.getsize(LogFile)
             if FileSize < self.FileSize:
-                while self.TryCount < 10:
+                TryCount = 0
+                while TryCount < 10:
                     if not self.ReloadMonitorPath():
-                        self.TryCount += 1
+                        TryCount += 1
                     else:
-                        self.TryCount = 0
+                        TryCount = 0
                         self.FileSize = os.path.getsize(LogFile)
                         break
                     time.sleep(0.1)
 
-                if self.TryCount == 10:
+                if TryCount == 10:
                     raise Exception("Open %s failed after try 10 times"
                                     % LogFile)
             else:
@@ -289,7 +270,7 @@ class NeteaseMusicStatus:
             else:
                 self.CallbackLog(Line)
             time.sleep(Interval)
-            if self.PlayState == PlayState.Playing:
+            if self.PlayState == PlayState.PLAYING:
                 self.SetCurrentLrc()
                 self.OutPutCurrentLrc()
 
@@ -297,7 +278,7 @@ class NeteaseMusicStatus:
         NewOutPut = GetOutPut(self.CurrentLrc)
         if NewOutPut == self.OutPutHtml:
             return
-        with open(self.OutPutPath, 'w', encoding='utf-8') as OutPutFile:
+        with open(OUTPUT, 'w', encoding='utf-8') as OutPutFile:
             OutPutFile.write(NewOutPut)
         self.OutPutHtml = NewOutPut
 
@@ -328,50 +309,100 @@ class NeteaseMusicStatus:
                 pass
         return NewList
 
-    def GetHiraganaLrc(self, Lrc, IsPreviousJapanese):
-        if not IsPreviousJapanese or IsOnlyEnglishOrPunctuation(Lrc):
-            Lrc = Lrc.replace("　", " ")
-            IsPreviousJapanese = not IsOnlyEnglishOrPunctuation(Lrc)
-        if not IsPreviousJapanese:
-            LrcHiragana = " " + Lrc
-        else:
-            LrcHiragana = self.GetKakasiConvert(Lrc, "H")   # .replace(" ", "")
-            if IsContainChinese(LrcHiragana):
+    def GetHiraganaLrc(self, LrcSplit):
+        LrcConverted = ""
+        LrcRomajinn = ""
+        PriorHira = ""
+        IsPreJP = True
+
+        for Split in LrcSplit:
+            orig = Split['orig']
+            hira = Split['hira']
+            roma = Split['hepburn']
+            if not IsPreJP:
+                orig = orig.replace("　", " ")
+            if IsOnlyEnglishOrPunctuation(orig):
+                LrcConverted += orig + " "
+                LrcRomajinn += orig + " "
+                PriorHira = ""
+                IsPreJP = False
+                continue
+            IsPreJP = True
+            if hira == "":
                 KanjiLrc = ""
-                for each in Lrc:
-                    if each in self.Hanzi2KanjiLib.keys():
-                        each = self.Hanzi2KanjiLib[each][0]
-                    KanjiLrc += each
-                Lrc = KanjiLrc
-                LrcHiragana = self.GetKakasiConvert(
-                    Lrc, "H")  # .replace(" ", "")
-            if LrcHiragana != Lrc:
-                ListedLrcHiragana = list(LrcHiragana)
-                ListedLrc = list(Lrc)
-                LrcEnd = list()
-                for Index in range(len(ListedLrc)):
-                    LrcIndex = -Index - 1
-                    if ListedLrcHiragana[LrcIndex] == ListedLrc[LrcIndex]:
-                        LrcEnd.append(ListedLrc[LrcIndex])
-                        ListedLrcHiragana[LrcIndex] = ""
-                        ListedLrc[LrcIndex] = ""
+                for EachStr in orig:
+                    if EachStr in self.Hanzi2KanjiLib.keys():
+                        KanjiLrc += self.Hanzi2KanjiLib[EachStr][0]
                     else:
-                        break
-                RemoveAll(ListedLrc, "")
-                RemoveAll(ListedLrcHiragana, "")
-                LrcHiragana = ""
-                for String in ListedLrc:
-                    LrcHiragana += String
+                        KanjiLrc += EachStr
+                orig = KanjiLrc
+                hira = ""
+                roma = ""
+                for newEach in kakasi().convert(orig):
+                    hira += newEach['hira']
+                    roma += newEach['hepburn']
+            if hira == orig:
+                if hira == PriorHira:
+                    orig = ""
+                    roma = ""
+                PriorHira = ""
+            else:
+                PriorHira = "（" + hira + "）"
+            LrcConverted += orig + PriorHira
+            LrcRomajinn += roma + " "
 
-                LrcHiragana += "("
-                for String in ListedLrcHiragana:
-                    LrcHiragana += String
-                LrcHiragana += ")"
+        return {
+            "Lrc": LrcConverted,
+            "Roma": LrcRomajinn
+        }
 
-                for String in LrcEnd:
-                    LrcHiragana += String
-        LrcRomanjinn = self.GetKakasiConvert(Lrc, "a") + " "
-        return IsPreviousJapanese, LrcHiragana, LrcRomanjinn
+    def SplitLrc(self, Lrc):
+        Lrc = Lrc\
+            .replace("(", "（")\
+            .replace(")", "）")\
+            .replace(" ", "　")\
+            .replace("　", "//split//　//split//")\
+            .replace("、", "//split//、//split//")\
+            .replace("。", "//split//、//split//")
+        Lrc = re.split("//split//", Lrc)
+        LrcSplit = list()
+        Index = -1
+        while Index >= -len(Lrc):
+            Item = Lrc[Index]
+            if(Item is None):
+                Index -= 2
+            else:
+                Index -= 1
+                LrcSplit.append(Item)
+        LrcSplit.reverse()
+        Lrc = RemoveAll(LrcSplit, "")
+        LrcSplit = list()
+        for Split in Lrc:
+            KakasiSplit = kakasi().convert(Split)
+            for each in KakasiSplit:
+                for Item in SplitAll(each['orig'], "(（.*?）){1}"):
+                    LrcSplit += kakasi().convert(Item)
+        return LrcSplit
+
+    def FormatLrc(self, Lrc, Translation):
+        def SimpleFormat(Source):
+            Source = ReplaceAll(Source, " 　", "　")
+            Source = ReplaceAll(Source, "　 ", "　")
+            Source = ReplaceAll(Source, "（ ", "（")
+            return Source.replace("　:", " :").replace(":　", ": ")
+
+        Roma = SimpleFormat(Lrc['Roma'])
+        Lrc = SimpleFormat(Lrc['Lrc'])
+        if IsOnlyEnglishOrPunctuation(Lrc):
+            Lrc = Lrc.replace("　", " ")
+        if Translation != "":
+            Translation += " / "
+        Translation += Roma
+
+        return {
+            "Lrc": ReplaceAll(Lrc, "  ", " "),
+            "Translation": ReplaceAll(Translation, "  ", " ")
+        }
 
     def GetConvertedLrc(self, SplitTimeLrc, SplitTimeTranslation, IsJapanese):
         Result = dict()
@@ -381,62 +412,34 @@ class NeteaseMusicStatus:
                 Translation = SplitTimeTranslation[TimeItem]
             else:
                 Translation = ""
-            if IsJapanese:
-                LrcConverted = ""
-                LrcSplitList = self.Wakati.do(Lrc.replace(" ", "　"))
-                LrcSplitList = LrcSplitList.split(" ")
-            else:
-                LrcConverted = Lrc
-                LrcSplitList = list()
+            if not IsJapanese:
+                Result[TimeItem] = {
+                    "Lrc": Lrc,
+                    "Translation": Translation
+                }
+                continue
+            LrcSplit = self.SplitLrc(Lrc)
+            Lrc = self.GetHiraganaLrc(LrcSplit)
+            Lrc = self.FormatLrc(Lrc, Translation)
 
-            IsPreviousJapanese = False
-            LrcRomajinn = ""
-            for Split in LrcSplitList:
-                if "　" in Split:
-                    Split = Split.replace("　", "//Split//　//Split//")
-                    Split = Split.split("//Split//")
-                if isinstance(Split, list):
-                    for Item in Split:
-                        IsPreviousJapanese, ItemHiragana, ItemRomajinn = \
-                            self.GetHiraganaLrc(Item, IsPreviousJapanese)
-                        LrcConverted += " " + ItemHiragana
-                        LrcRomajinn += ItemRomajinn
-                    continue
-                IsPreviousJapanese, SplitHiragana, SplitRomajinn = \
-                    self.GetHiraganaLrc(Split, IsPreviousJapanese)
-                LrcConverted += " " + SplitHiragana
-                LrcRomajinn += SplitRomajinn
-            LrcConverted = ReplaceAll(LrcConverted, " 　", "　")
-            LrcConverted = ReplaceAll(LrcConverted, "　 ", "　")
+            # Testing : Unavailable
+            # Duplicate = re.compile("（.*?）（.*?）")\
+            #     .findall(Lrc["Lrc"])
+            # DuplicateList = list()
+            # for Pair in Duplicate:
+            #     DuplicateList.append(
+            #         re.compile("）.*?（）.*?（").findall(Pair[::-1])[0][::-1]
+            #     )
+            #     print(DuplicateList[-1])
+            # End Testing
 
-            LrcRomajinn = ReplaceAll(LrcRomajinn, " 　", "　")
-            LrcRomajinn = ReplaceAll(LrcRomajinn, "　 ", "　")
-
-            if not IsContainJapanese(LrcConverted):
-                LrcConverted = LrcConverted.replace("　", " ")
-                if IsJapanese:
-                    if Translation != "":
-                        Translation += " / "
-                    Translation += LrcConverted
-            else:
-                LrcConverted = LrcConverted.replace("　:　", " : ")
-                if Translation != "":
-                    Translation += " / "
-                Translation += LrcRomajinn
-            Translation = Translation.replace("　:　", " : ")
-
-            LrcConverted = ReplaceAll(LrcConverted, "  ", " ")
-            Translation = ReplaceAll(Translation, "  ", " ")
-            Result[TimeItem] = {
-                'Lrc': LrcConverted,
-                'Translation': Translation
-            }
+            Result[TimeItem] = Lrc
         return Result
 
     def GetLrc(self):
-        Url = "http://music.163.com/api/song/lyric?" + \
-              "id=" + str(self.CurrentSong) + "&lv=1&kv=1&tv=-1"
-        JsonDate = json.loads(requests.get(Url, headers=self.Headers).text)
+        Url = "http://music.163.com/api/song/lyric?" +\
+            "id=" + str(self.CurrentSong) + "&lv=1&kv=1&tv=-1"
+        JsonDate = json.loads(requests.get(Url, headers=HEADERS).text)
         if 'nolyric' in JsonDate.keys():
             Result = self.GetSongNameAndArtists()
         else:
@@ -475,7 +478,7 @@ class NeteaseMusicStatus:
             else:
                 if (
                     CurrentTime * 1000 - 500 < self.NextLrcTime
-                    or self.PlayState != PlayState.Playing
+                    or self.PlayState != PlayState.PLAYING
                 ):
                     return
                 try:
@@ -524,6 +527,29 @@ def ReplaceAll(Source, Target, New):
     return Source
 
 
+def SplitAll(Source, Target, Retainterget=True):
+    FindResult = re.compile(Target).findall(Source)
+    NewList = list()
+    if FindResult:
+        FindResult = FindResult[0]
+        if isinstance(FindResult, tuple):
+            FindResult = FindResult[0]
+        Source = Source.split(FindResult)
+        for Key in range(len(Source)):
+            Result = SplitAll(Source[Key], Target)
+            if Result:
+                NewList += Result
+            else:
+                NewList.append(Source[Key])
+            if(Retainterget and Key != len(Source)-1):
+                NewList.append(FindResult)
+        RemoveAll(NewList, "")
+        return NewList
+    NewList.append(Source)
+    RemoveAll(NewList, "")
+    return NewList
+
+
 def GetOutPut(CurrentLrc):
     OutPut = ""
     for i in range(3):
@@ -537,22 +563,22 @@ def GetOutPut(CurrentLrc):
 
 
 def LoadSongDataBase():
-    cursor = sqlite3.connect(MusicDataPath).cursor()
+    cursor = sqlite3.connect(DATABASE).cursor()
     CursorResults = cursor.execute(
         'SELECT tid, track '
         'FROM web_track'
     ).fetchall()
     cursor.close()
     SongData = dict()
-    for each in CursorResults:
-        SongData[str(each[0])] = each[1]
+    for Result in CursorResults:
+        SongData[str(Result[0])] = Result[1]
     return SongData
 
 
 def IsContainJapanese(Source):
     SearchRanges = [
-        '[\u30a0-\u30ff]',  # Japanese katakana
-        '[\u3040-\u3090]',  # Japanese hiragana
+        '[\u3040-\u3090]',  # hiragana
+        '[\u30a0-\u30ff]'   # katakana
     ]
     for Range in SearchRanges:
         if RemoveAll(re.compile(Range).findall(Source), '一'):
@@ -566,14 +592,7 @@ def IsContainChinese(Source):
 
 def IsOnlyEnglishOrPunctuation(Source):
     SearchRanges = [
-        # Num
-        '[\u0030-\u0039]',
-
-        # Eng
-        '[\u0041-\u005a]',
-        '[\u0061-\u0074]',
-
-        # Punctuation
+        '[\u0000-\u007f]',
         '[\u3000-\u303f]',
         '[\ufb00-\ufffd]'
     ]

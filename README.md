@@ -1,8 +1,11 @@
 # wallpaperEngineDesktopWithNeteaseLrcDisplay
 
-!!!! Version higher than 2.9.2.199190 (not include) is current now supported
+!!!! Version higher than 2.9.2.199190 (not include) is current now **not supported**
+
 Since the cloudmusic.log file is now changed to the new cloudmusic.elog, as well as using a new and unknow encoding.
+
 To download history Versions, use : https://d1.music.126.net/dmusic/cloudmusicsetup...exe
+
 For Example, the latest supported version : https://d1.music.126.net/dmusic/cloudmusicsetup2.9.2.199190.exe
 
 Introduction:

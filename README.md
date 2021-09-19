@@ -8,7 +8,7 @@ To download history Versions, use : https://d1.music.126.net/dmusic/cloudmusicse
 
 For Example, the latest supported version : https://d1.music.126.net/dmusic/cloudmusicsetup2.9.2.199190.exe
 
-If you know what encoding the new log version is using, you can comment in the issue below
+If someone knows what encoding the new log version is using, you may comment in the issue below
 [https://github.com/wayneferdon/WallpaperEngine.NeteaseMusicLyricDesktop/issues/1]
  
 Introduction:

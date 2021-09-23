@@ -134,7 +134,8 @@ class NeteaseMusicStatus:
                         SongArtist += ' / '
                     SongArtist += Artist['name']
                 Result = {
-                    0: {'Lrc': SongName, 'Translation': ''},
+                    0: {'Lrc': '无歌词', 'Translation': ''},
+                    1: {'Lrc': SongName, 'Translation': ''},
                     float("inf"): {'Lrc': SongArtist, 'Translation': ''}
                 }
             except KeyError:
@@ -154,7 +155,8 @@ class NeteaseMusicStatus:
                 SongArtist += Artist['name']
             if SongArtist != 'by: ':
                 Result = {
-                    0: {'Lrc': SongName, 'Translation': ''},
+                    0: {'Lrc': '无歌词', 'Translation': ''},
+                    1: {'Lrc': SongName, 'Translation': ''},
                     float("inf"): {'Lrc': SongArtist, 'Translation': ''}
                 }
             else:
@@ -437,6 +439,11 @@ class NeteaseMusicStatus:
         return Result
 
     def GetLrc(self):
+        self.CurrentLrc = [
+            {'Lrc': '', 'Translation': ''},
+            {'Lrc': '', 'Translation': ''},
+            {'Lrc': '', 'Translation': ''}
+        ]
         Url = "http://music.163.com/api/song/lyric?" +\
             "id=" + str(self.CurrentSong) + "&lv=1&kv=1&tv=-1"
         JsonDate = json.loads(requests.get(Url, headers=HEADERS).text)

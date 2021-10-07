@@ -9,6 +9,7 @@ import sqlite3
 from enum import Enum
 from pykakasi import kakasi
 
+
 APPDATA = os.getenv("LOCALAPPDATA")
 LOGPATH = expanduser(APPDATA + "/Netease/CloudMusic/cloudmusic.log")
 DATABASE = expanduser(APPDATA + "/Netease/CloudMusic/Library/webdb.dat")
@@ -44,6 +45,7 @@ class NeteaseMusicStatus:
         self.CurrentSongLrc = dict()
         self.CurrentSongLength = 0
         self.LastUpdate = 0
+        self.kakasi = kakasi()
 
         self.LastResumeTime = 0
         self.LastPauseTime = 0
@@ -165,6 +167,11 @@ class NeteaseMusicStatus:
 
     def ReloadMonitorPath(self):
         try:
+            self.LogFile.close()
+        except Exception:
+            pass
+        try:
+            self.LogFile.close()
             self.LogFile = open(LOGPATH, "rb")
             self.FileSize = os.path.getsize(LOGPATH)
             self.LogFile.seek(0, 1)
@@ -311,7 +318,12 @@ class NeteaseMusicStatus:
                 pass
         return NewList
 
-    def GetHiraganaLrc(self, LrcSplit):
+    def GetHiraganaLrc(self, Lrc):
+        LrcSplit = list()
+        for Split in Lrc:
+            for each in self.kakasi.convert(Split):
+                for Item in SplitAll(each['orig'], "(（.*?）){1}"):
+                    LrcSplit += self.kakasi.convert(Item)
         LrcConverted = ""
         LrcRomajinn = ""
         PriorHira = ""
@@ -378,13 +390,7 @@ class NeteaseMusicStatus:
                 LrcSplit.append(Item)
         LrcSplit.reverse()
         Lrc = RemoveAll(LrcSplit, "")
-        LrcSplit = list()
-        for Split in Lrc:
-            KakasiSplit = kakasi().convert(Split)
-            for each in KakasiSplit:
-                for Item in SplitAll(each['orig'], "(（.*?）){1}"):
-                    LrcSplit += kakasi().convert(Item)
-        return LrcSplit
+        return Lrc
 
     def FormatLrc(self, Lrc, Translation):
         def SimpleFormat(Source):
@@ -414,14 +420,18 @@ class NeteaseMusicStatus:
                 Translation = SplitTimeTranslation[TimeItem]
             else:
                 Translation = ""
+            Result[TimeItem] = {
+                "Lrc": Lrc,
+                "Translation": Translation
+            }
             if not IsJapanese:
                 Result[TimeItem] = {
                     "Lrc": Lrc,
                     "Translation": Translation
                 }
                 continue
-            LrcSplit = self.SplitLrc(Lrc)
-            Lrc = self.GetHiraganaLrc(LrcSplit)
+            Lrc = self.SplitLrc(Lrc)
+            Lrc = self.GetHiraganaLrc(Lrc)
             Lrc = self.FormatLrc(Lrc, Translation)
 
             # Testing : Unavailable
@@ -501,7 +511,8 @@ class NeteaseMusicStatus:
                         return
                     self.NextLrcTime = self.SongLrcKeyTime[CurrentLrcIndex + 1]
                     self.CurrentLrc[2] = self.CurrentSongLrc[self.NextLrcTime]
-                except Exception:
+                except Exception as e:
+                    # print(e)
                     pass
         else:
             KeyTime = None
@@ -518,7 +529,8 @@ class NeteaseMusicStatus:
                     self.NextLrcTime = None
                     self.CurrentLrc[2] = {'Lrc': '', 'Translation': ''}
                 self.CurrentLrc[1] = self.CurrentSongLrc[CurrentLrcTime]
-            except Exception:
+            except Exception as e:
+                # print(e)
                 pass
 
 
@@ -618,6 +630,7 @@ if __name__ == '__main__':
     while True:
         try:
             MainProgress.Start()
-        except Exception:
+        except Exception as e:
+            # print(e)
             MainProgress = NeteaseMusicStatus()
             pass

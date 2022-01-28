@@ -404,8 +404,8 @@ class NeteaseMusicStatus:
         if IsOnlyEnglishOrPunctuation(Lrc):
             Lrc = Lrc.replace("　", " ")
         if Translation != "":
-            Translation += " / "
-        Translation += Roma
+            Translation = "译：" + Translation + "\t|\t"
+        Translation += "音：" + Roma
 
         return {
             "Lrc": ReplaceAll(Lrc, "  ", " "),

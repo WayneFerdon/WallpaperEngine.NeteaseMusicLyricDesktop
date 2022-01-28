@@ -1,861 +1,958 @@
 {
-	"approved": true,
-	"contentrating": "Everyone",
-	"description": "",
-	"file": "index.html",
-	"general": {
-		"localization": {
-			"en-us": {
-				"ui_color": "颜色",
-				"ui_color_blur": "外发光颜色",
-				"ui_opacity": "不透明度",
-				"ui_position_X": "X坐标",
-				"ui_position_Y": "Y坐标",
-				"ui_split_line": "<hr width=200>",
-				"-------1-------": "",
-				"ui_background_mode": "<h4>壁纸类型</h4>",
-				"ui_background_mode_img": "图像",
-				"ui_background_mode_slide": "幻灯片",
-				"ui_background_mode_video": "视频",
-				"ui_background_mode_color": "纯色",
-				"ui_background_img_dafault": "默认背景",
-				"ui_background_img_custom": "自定义背景",
-				"ui_background_img_custom_fg": "自定义前景",
-				"ui_background_img_size": "背景契合模式",
-				"ui_background_img_size_fg": "前景契合模式",
-				"ui_background_img_size_fill": "填充",
-				"ui_background_img_size_stretch": "拉伸",
-				"ui_background_img_size_adapt": "适应",
-				"ui_background_img_size_repiat": "平铺",
-				"ui_background_img_size_center": "居中",
-				"ui_background_slide_custom": "自定义文件夹",
-				"ui_background_slide_random": "随机播放",
-				"ui_background_slide_time": "图片切换间隔",
-				"ui_background_slide_time_10_min": "10分钟",
-				"ui_background_slide_time_1_h": "60分钟",
-				"ui_background_slide_time_1_min": "1分钟",
-				"ui_background_slide_time_30_min": "30分钟",
-				"ui_background_slide_time_5_min": "5分钟",
-				"ui_background_video_custom": "自定义视频(仅支持.WebM)",
-				"ui_background_video_volume": "音量",
-				"-------2-------": "",
-				"ui_particle": "<h4>粒子特效</h4>",
-				"ui_particle_count": "粒子数量",
-				"ui_particle_blur_size": "外发光大小",
-				"ui_particle_random": "随机透明度",
-				"ui_particle_form": "粒子形状",
-				"ui_particle_form_round": "圆形",
-				"ui_particle_form_square": "正方形",
-				"ui_particle_form_triangle": "三角形",
-				"ui_particle_form_star": "星形",
-				"ui_particle_form_custom": "自定义",
-				"ui_particle_form_custom_file": "自定义图像",
-				"ui_particle_size": "粒子大小",
-				"ui_particle_size_random": "大小波动",
-				"ui_particle_line": "粒子连线",
-				"ui_particle_line_size": "连线粗细",
-				"ui_particle_line_leght": "连线长度",
-				"ui_particle_line_color": "连线颜色",
-				"ui_particle_line_opacity": "连线不透明度",
-				"ui_particle_move": "粒子运动",
-				"ui_particle_move_speed": "粒子速度",
-				"ui_particle_move_speed_random": "速度波动",
-				"ui_particle_music_speed": "音乐影响",
-				"ui_particle_music_tone": "音高范围",
-				"ui_particle_music_bass": "男低音",
-				"ui_particle_music_tenor": "男高音",
-				"ui_particle_music_mezzo_soprano": "女中音",
-				"ui_particle_music_soprano": "女高音",
-				"ui_particle_music_strengh": "音乐影响程度",
-				"ui_particle_move_dir_x": "X轴方向",
-				"ui_particle_move_dir_y": "Y轴方向",
-				"ui_particle_go": "单向移动",
-				"ui_particle_mirror": "粒子间碰撞",
-				"ui_particle_mode_move": "屏幕边缘碰撞",
-				"-------3-------": "",
-				"ui_audio_visualize_type": "<h4>音频可视化</h4>",
-				"ui_audio_visualize_type_none": "无",
-				"ui_audio_visualize_type_monstercat": "[MonsterCat]",
-				"ui_audio_visualize_monstercat_smash": "平滑度",
-				"ui_audio_visualize_monstercat_barWidth": "条形宽度",
-				"ui_audio_visualize_monstercat_barSpace": "条形间距",
-				"ui_audio_visualize_monstercat_double": "反向填充",
-				"ui_audio_visualize_monstercat_reverse": "上下翻转",
-				"-------4-------": "",
-				"ui_size": "大小",
-				"ui_font": "字体",
-				"ui_font_dir": ".ttf (.png)",
-				"ui_alignment": "对齐方式",
-				"ui_left": "左对齐",
-				"ui_right": "右对齐",
-				"ui_center": "居中",
-				"-------4.1-------": "",
-				"ui_time_time": "<h4>时间</h4>",
-				"ui_time_sec": "显示秒",
-				"ui_time_24": "24小时制",
-				"-------5-------": "",
-				"ui_date": "<h4>日期</h4>",
-				"ui_date_format": "日期格式",
-				"ui_date_format_description": "<small>日期格式 :<br />{DD} {MM} {YYYY}<br />{week} {wek} {month} {,}</small>"
+	"approved" : true,
+	"contentrating" : "Everyone",
+	"description" : "",
+	"file" : "index.html",
+	"general" : 
+	{
+		"localization" : 
+		{
+			"en-us" : 
+			{
+				"-------1-------" : "",
+				"-------2-------" : "",
+				"-------3-------" : "",
+				"-------4-------" : "",
+				"-------4.1-------" : "",
+				"-------5-------" : "",
+				"ui_alignment" : "对齐方式",
+				"ui_audio_visualize_monstercat_barSpace" : "条形间距",
+				"ui_audio_visualize_monstercat_barWidth" : "条形宽度",
+				"ui_audio_visualize_monstercat_double" : "反向填充",
+				"ui_audio_visualize_monstercat_reverse" : "上下翻转",
+				"ui_audio_visualize_monstercat_smash" : "平滑度",
+				"ui_audio_visualize_type" : "<h4>音频可视化</h4>",
+				"ui_audio_visualize_type_monstercat" : "[MonsterCat]",
+				"ui_audio_visualize_type_none" : "无",
+				"ui_background_img_custom" : "自定义背景",
+				"ui_background_img_custom_fg" : "自定义前景",
+				"ui_background_img_dafault" : "默认背景",
+				"ui_background_img_size" : "背景契合模式",
+				"ui_background_img_size_adapt" : "适应",
+				"ui_background_img_size_center" : "居中",
+				"ui_background_img_size_fg" : "前景契合模式",
+				"ui_background_img_size_fill" : "填充",
+				"ui_background_img_size_repiat" : "平铺",
+				"ui_background_img_size_stretch" : "拉伸",
+				"ui_background_mode" : "<h4>壁纸类型</h4>",
+				"ui_background_mode_color" : "纯色",
+				"ui_background_mode_img" : "图像",
+				"ui_background_mode_slide" : "幻灯片",
+				"ui_background_mode_video" : "视频",
+				"ui_background_slide_custom" : "自定义文件夹",
+				"ui_background_slide_random" : "随机播放",
+				"ui_background_slide_time" : "图片切换间隔",
+				"ui_background_slide_time_10_min" : "10分钟",
+				"ui_background_slide_time_1_h" : "60分钟",
+				"ui_background_slide_time_1_min" : "1分钟",
+				"ui_background_slide_time_30_min" : "30分钟",
+				"ui_background_slide_time_5_min" : "5分钟",
+				"ui_background_video_custom" : "自定义视频(仅支持.WebM)",
+				"ui_background_video_volume" : "音量",
+				"ui_center" : "居中",
+				"ui_color" : "颜色",
+				"ui_color_blur" : "外发光颜色",
+				"ui_date" : "<h4>日期</h4>",
+				"ui_date_format" : "日期格式",
+				"ui_date_format_description" : "<small>日期格式 :<br />{DD} {MM} {YYYY}<br />{week} {wek} {month} {,}</small>",
+				"ui_font" : "字体",
+				"ui_font_dir" : ".ttf (.png)",
+				"ui_left" : "左对齐",
+				"ui_opacity" : "不透明度",
+				"ui_particle" : "<h4>粒子特效</h4>",
+				"ui_particle_blur_size" : "外发光大小",
+				"ui_particle_count" : "粒子数量",
+				"ui_particle_form" : "粒子形状",
+				"ui_particle_form_custom" : "自定义",
+				"ui_particle_form_custom_file" : "自定义图像",
+				"ui_particle_form_round" : "圆形",
+				"ui_particle_form_square" : "正方形",
+				"ui_particle_form_star" : "星形",
+				"ui_particle_form_triangle" : "三角形",
+				"ui_particle_go" : "单向移动",
+				"ui_particle_line" : "粒子连线",
+				"ui_particle_line_color" : "连线颜色",
+				"ui_particle_line_leght" : "连线长度",
+				"ui_particle_line_opacity" : "连线不透明度",
+				"ui_particle_line_size" : "连线粗细",
+				"ui_particle_mirror" : "粒子间碰撞",
+				"ui_particle_mode_move" : "屏幕边缘碰撞",
+				"ui_particle_move" : "粒子运动",
+				"ui_particle_move_dir_x" : "X轴方向",
+				"ui_particle_move_dir_y" : "Y轴方向",
+				"ui_particle_move_speed" : "粒子速度",
+				"ui_particle_move_speed_random" : "速度波动",
+				"ui_particle_music_bass" : "男低音",
+				"ui_particle_music_mezzo_soprano" : "女中音",
+				"ui_particle_music_soprano" : "女高音",
+				"ui_particle_music_speed" : "音乐影响",
+				"ui_particle_music_strengh" : "音乐影响程度",
+				"ui_particle_music_tenor" : "男高音",
+				"ui_particle_music_tone" : "音高范围",
+				"ui_particle_random" : "随机透明度",
+				"ui_particle_size" : "粒子大小",
+				"ui_particle_size_random" : "大小波动",
+				"ui_position_X" : "X坐标",
+				"ui_position_Y" : "Y坐标",
+				"ui_right" : "右对齐",
+				"ui_size" : "大小",
+				"ui_split_line" : "<hr width=200>",
+				"ui_time_24" : "24小时制",
+				"ui_time_sec" : "显示秒",
+				"ui_time_time" : "<h4>时间</h4>"
 			}
 		},
-		"properties": {
-			"WallpaperMode": {
-				"options": [
+		"properties" : 
+		{
+			"AudioVisualizeModel" : 
+			{
+				"options" : 
+				[
 					{
-						"label": "ui_background_mode_img",
-						"value": 1
+						"label" : "ui_audio_visualize_type_none",
+						"value" : 0
 					},
 					{
-						"label": "ui_background_mode_slide",
-						"value": 2
-					},
-					{
-						"label": "ui_background_mode_video",
-						"value": 3
-					},
-					{
-						"label": "ui_background_mode_color",
-						"value": 4
+						"label" : "ui_audio_visualize_type_monstercat",
+						"value" : 1
 					}
 				],
-				"order": 1000,
-				"text": "ui_background_mode",
-				"type": "combo",
-				"value": 1
+				"order" : 3001,
+				"text" : "ui_audio_visualize_type",
+				"type" : "combo",
+				"value" : 1
 			},
-			"DefaultWallpaper": {
-				"condition": "WallpaperMode.value == 1 || WallpaperMode.value == 2",
-				"options": [
+			"AudioVisualizeMonstercatBarPadding" : 
+			{
+				"condition" : "AudioVisualizeModel.value == 1",
+				"max" : 35,
+				"min" : 0,
+				"order" : 3132,
+				"text" : "ui_audio_visualize_monstercat_barSpace",
+				"type" : "slider",
+				"value" : 4
+			},
+			"AudioVisualizeMonstercatBarWidth" : 
+			{
+				"condition" : "AudioVisualizeModel.value == 1",
+				"max" : 100,
+				"min" : 1,
+				"order" : 3131,
+				"text" : "ui_audio_visualize_monstercat_barWidth",
+				"type" : "slider",
+				"value" : 27
+			},
+			"AudioVisualizeMonstercatColor" : 
+			{
+				"condition" : "AudioVisualizeModel.value == 1",
+				"order" : 3111,
+				"text" : "ui_color",
+				"type" : "color",
+				"value" : "1 1 1"
+			},
+			"AudioVisualizeMonstercatDouble" : 
+			{
+				"condition" : "AudioVisualizeModel.value == 1",
+				"order" : 3143,
+				"text" : "ui_audio_visualize_monstercat_double",
+				"type" : "bool",
+				"value" : false
+			},
+			"AudioVisualizeMonstercatOpacity" : 
+			{
+				"condition" : "AudioVisualizeModel.value == 1",
+				"max" : 100,
+				"min" : 0,
+				"order" : 3112,
+				"text" : "ui_opacity",
+				"type" : "slider",
+				"value" : 24
+			},
+			"AudioVisualizeMonstercatPositionX" : 
+			{
+				"condition" : "AudioVisualizeModel.value == 1",
+				"max" : 100,
+				"min" : 0,
+				"order" : 3141,
+				"text" : "ui_position_X",
+				"type" : "slider",
+				"value" : 50
+			},
+			"AudioVisualizeMonstercatPositionY" : 
+			{
+				"condition" : "AudioVisualizeModel.value == 1",
+				"max" : 100,
+				"min" : 0,
+				"order" : 3142,
+				"text" : "ui_position_Y",
+				"type" : "slider",
+				"value" : 100
+			},
+			"AudioVisualizeMonstercatReverse" : 
+			{
+				"condition" : "AudioVisualizeModel.value == 1",
+				"order" : 3144,
+				"text" : "ui_audio_visualize_monstercat_reverse",
+				"type" : "bool",
+				"value" : false
+			},
+			"AudioVisualizeMonstercatSmoothing" : 
+			{
+				"condition" : "AudioVisualizeModel.value == 1",
+				"max" : 10,
+				"min" : 1,
+				"order" : 3121,
+				"text" : "ui_audio_visualize_monstercat_smash",
+				"type" : "slider",
+				"value" : 2
+			},
+			"BackgroundColor" : 
+			{
+				"condition" : "WallpaperMode.value == 4",
+				"order" : 1401,
+				"text" : "ui_color",
+				"type" : "color",
+				"value" : "0.26 0.32 0.38"
+			},
+			"CustomDirectory" : 
+			{
+				"condition" : "WallpaperMode.value == 2",
+				"mode" : "fetchall",
+				"order" : 1201,
+				"text" : "ui_background_slide_custom",
+				"type" : "directory"
+			},
+			"DateAlignment" : 
+			{
+				"condition" : "ShowDate.value",
+				"options" : 
+				[
 					{
-						"label": "MHW",
-						"value": 1
+						"label" : "ui_left",
+						"value" : "left"
 					},
 					{
-						"label": "WCLF",
-						"value": 2
+						"label" : "ui_center",
+						"value" : "center"
+					},
+					{
+						"label" : "ui_right",
+						"value" : "right"
 					}
 				],
-				"order": 1101,
-				"text": "ui_background_img_dafault",
-				"type": "combo",
-				"value": 1
+				"order" : 4243,
+				"text" : "ui_alignment",
+				"type" : "combo",
+				"value" : "right"
 			},
-			"Image": {
-				"condition": "WallpaperMode.value == 1",
-				"order": 1102,
-				"text": "ui_background_img_custom",
-				"type": "file"
+			"DateBlurColor" : 
+			{
+				"condition" : "ShowDate.value && DateColorRhythm.value != true",
+				"order" : 4212,
+				"text" : "ui_color_blur",
+				"type" : "color",
+				"value" : "0.2 0.1568627450980392 0.18823529411764706"
 			},
-			"Foreground": {
-				"condition": "WallpaperMode.value == 1",
-				"order": 1103,
-				"text": "ui_background_img_custom_fg",
-				"type": "file"
+			"DateColor" : 
+			{
+				"condition" : "ShowDate.value && DateColorRhythm.value != true",
+				"order" : 4211,
+				"text" : "ui_color",
+				"type" : "color",
+				"value" : "1 1 1"
 			},
-			"ImageDisplayStlye": {
-				"condition": "WallpaperMode.value == 1",
-				"options": [
+			"DateFont" : 
+			{
+				"condition" : "ShowDate.value",
+				"order" : 4231,
+				"text" : "ui_font",
+				"type" : "textinput",
+				"value" : "Lato"
+			},
+			"DateFontDir" : 
+			{
+				"condition" : "(ShowDate.value && DateFont.value == 'custom') || DateFontDir.value != ''",
+				"order" : 4232,
+				"text" : "ui_font_dir",
+				"type" : "file"
+			},
+			"DateFormat" : 
+			{
+				"condition" : "ShowDate.value",
+				"order" : 4251,
+				"text" : "ui_date_format",
+				"type" : "textinput",
+				"value" : "{wek} {YYYY}. {MM}. {DD}."
+			},
+			"DateFormatDescription" : 
+			{
+				"condition" : "ShowDate.value",
+				"order" : 4252,
+				"text" : "ui_date_format_description",
+				"type" : "text"
+			},
+			"DateOpacity" : 
+			{
+				"condition" : "ShowDate.value",
+				"max" : 100,
+				"min" : 0,
+				"order" : 4213,
+				"text" : "ui_opacity",
+				"type" : "slider",
+				"value" : 65
+			},
+			"DateSize" : 
+			{
+				"condition" : "ShowDate.value",
+				"max" : 50,
+				"min" : 10,
+				"order" : 4221,
+				"text" : "ui_size",
+				"type" : "slider",
+				"value" : 16
+			},
+			"DateX" : 
+			{
+				"condition" : "ShowDate.value",
+				"max" : 100,
+				"min" : 0,
+				"order" : 4241,
+				"text" : "ui_position_X",
+				"type" : "slider",
+				"value" : 63
+			},
+			"DateY" : 
+			{
+				"condition" : "ShowDate.value",
+				"max" : 100,
+				"min" : 0,
+				"order" : 4242,
+				"text" : "ui_position_Y",
+				"type" : "slider",
+				"value" : 74
+			},
+			"DefaultWallpaper" : 
+			{
+				"condition" : "WallpaperMode.value == 1 || WallpaperMode.value == 2",
+				"options" : 
+				[
 					{
-						"label": "ui_background_img_size_fill",
-						"value": 1
+						"label" : "MHW",
+						"value" : 1
 					},
 					{
-						"label": "ui_background_img_size_stretch",
-						"value": 2
-					},
-					{
-						"label": "ui_background_img_size_adapt",
-						"value": 3
-					},
-					{
-						"label": "ui_background_img_size_repiat",
-						"value": 4
-					},
-					{
-						"label": "ui_background_img_size_center",
-						"value": 5
+						"label" : "WCLF",
+						"value" : 2
 					}
 				],
-				"order": 1104,
-				"text": "ui_background_img_size",
-				"type": "combo",
-				"value": 1
+				"order" : 1101,
+				"text" : "ui_background_img_dafault",
+				"type" : "combo",
+				"value" : 1
 			},
-			"ForegroundDisplayStlye": {
-				"condition": "WallpaperMode.value == 1",
-				"options": [
+			"Foreground" : 
+			{
+				"condition" : "WallpaperMode.value == 1",
+				"order" : 1103,
+				"text" : "ui_background_img_custom_fg",
+				"type" : "file"
+			},
+			"ForegroundDisplayStlye" : 
+			{
+				"condition" : "WallpaperMode.value == 1",
+				"options" : 
+				[
 					{
-						"label": "ui_background_img_size_fill",
-						"value": 1
+						"label" : "ui_background_img_size_fill",
+						"value" : 1
 					},
 					{
-						"label": "ui_background_img_size_stretch",
-						"value": 2
+						"label" : "ui_background_img_size_stretch",
+						"value" : 2
 					},
 					{
-						"label": "ui_background_img_size_adapt",
-						"value": 3
+						"label" : "ui_background_img_size_adapt",
+						"value" : 3
 					},
 					{
-						"label": "ui_background_img_size_repiat",
-						"value": 4
+						"label" : "ui_background_img_size_repiat",
+						"value" : 4
 					},
 					{
-						"label": "ui_background_img_size_center",
-						"value": 5
+						"label" : "ui_background_img_size_center",
+						"value" : 5
 					}
 				],
-				"order": 1105,
-				"text": "ui_background_img_size_fg",
-				"type": "combo",
-				"value": 1
+				"order" : 1105,
+				"text" : "ui_background_img_size_fg",
+				"type" : "combo",
+				"value" : 1
 			},
-			"CustomDirectory": {
-				"condition": "WallpaperMode.value == 2",
-				"mode": "fetchall",
-				"order": 1201,
-				"text": "ui_background_slide_custom",
-				"type": "directory"
+			"Image" : 
+			{
+				"condition" : "WallpaperMode.value == 1",
+				"order" : 1102,
+				"text" : "ui_background_img_custom",
+				"type" : "file"
 			},
-			"Random": {
-				"condition": "WallpaperMode.value == 2",
-				"order": 1202,
-				"text": "ui_background_slide_random",
-				"type": "bool",
-				"value": false
-			},
-			"ImageSwitchInterval": {
-				"condition": "WallpaperMode.value == 2",
-				"options": [
+			"ImageDisplayStlye" : 
+			{
+				"condition" : "WallpaperMode.value == 1",
+				"options" : 
+				[
 					{
-						"label": "ui_background_slide_time_1_min",
-						"value": 1
+						"label" : "ui_background_img_size_fill",
+						"value" : 1
 					},
 					{
-						"label": "ui_background_slide_time_5_min",
-						"value": 5
+						"label" : "ui_background_img_size_stretch",
+						"value" : 2
 					},
 					{
-						"label": "ui_background_slide_time_10_min",
-						"value": 10
+						"label" : "ui_background_img_size_adapt",
+						"value" : 3
 					},
 					{
-						"label": "ui_background_slide_time_30_min",
-						"value": 30
+						"label" : "ui_background_img_size_repiat",
+						"value" : 4
 					},
 					{
-						"label": "ui_background_slide_time_1_h",
-						"value": 60
+						"label" : "ui_background_img_size_center",
+						"value" : 5
 					}
 				],
-				"order": 1203,
-				"text": "ui_background_slide_time",
-				"type": "combo",
-				"value": 1
+				"order" : 1104,
+				"text" : "ui_background_img_size",
+				"type" : "combo",
+				"value" : 1
 			},
-			"SelectVideo": {
-				"condition": "WallpaperMode.value == 3",
-				"fileType": "video",
-				"order": 1301,
-				"text": "ui_background_video_custom",
-				"type": "file",
-				"value": null
-			},
-			"VideoVolume": {
-				"condition": "WallpaperMode.value == 3",
-				"max": 100,
-				"min": 0,
-				"order": 1302,
-				"text": "ui_background_video_volume",
-				"type": "slider",
-				"value": 0
-			},
-			"BackgroundColor": {
-				"condition": "WallpaperMode.value == 4",
-				"order": 1401,
-				"text": "ui_color",
-				"type": "color",
-				"value": "0.26 0.32 0.38"
-			},
-			"ui_split_line_1": {
-				"order": 2000,
-				"text": "ui_split_line",
-				"type": "text"
-			},
-			"ShowParticle": {
-				"order": 2001,
-				"text": "ui_particle",
-				"type": "bool",
-				"value": true
-			},
-			"ParticleCount": {
-				"condition": "ShowParticle.value",
-				"max": 2000,
-				"min": 0,
-				"order": 2002,
-				"text": "ui_particle_count",
-				"type": "slider",
-				"value": 200
-			},
-			"ParticleColor": {
-				"condition": "ShowParticle.value",
-				"order": 2101,
-				"text": "ui_color",
-				"type": "color",
-				"value": "0.5725490196078431 0.37254901960784315 0.2980392156862745"
-			},
-			"ParticleShadowColor": {
-				"condition": "ShowParticle.value",
-				"order": 2102,
-				"text": "ui_color_blur",
-				"type": "color",
-				"value": "0.5725490196078431 0.37254901960784315 0.2980392156862745"
-			},
-			"ParticleShadowBlur": {
-				"condition": "ShowParticle.value",
-				"max": 5,
-				"min": 0,
-				"order": 2103,
-				"text": "ui_particle_blur_size",
-				"type": "slider",
-				"value": 0
-			},
-			"ParticleOpacity": {
-				"condition": "ShowParticle.value",
-				"max": 100,
-				"min": 0,
-				"order": 2201,
-				"text": "ui_opacity",
-				"type": "slider",
-				"value": 85
-			},
-			"ParticleOpacityRandom": {
-				"condition": "ShowParticle.value",
-				"order": 2202,
-				"text": "ui_particle_random",
-				"type": "bool",
-				"value": true
-			},
-			"ParticleShapeType": {
-				"condition": "ShowParticle.value",
-				"options": [
+			"ImageSwitchInterval" : 
+			{
+				"condition" : "WallpaperMode.value == 2",
+				"options" : 
+				[
 					{
-						"label": "ui_particle_form_round",
-						"value": 1
+						"label" : "ui_background_slide_time_1_min",
+						"value" : 1
 					},
 					{
-						"label": "ui_particle_form_square",
-						"value": 2
+						"label" : "ui_background_slide_time_5_min",
+						"value" : 5
 					},
 					{
-						"label": "ui_particle_form_triangle",
-						"value": 3
+						"label" : "ui_background_slide_time_10_min",
+						"value" : 10
 					},
 					{
-						"label": "ui_particle_form_star",
-						"value": 4
+						"label" : "ui_background_slide_time_30_min",
+						"value" : 30
 					},
 					{
-						"label": "ui_particle_form_custom",
-						"value": 5
+						"label" : "ui_background_slide_time_1_h",
+						"value" : 60
 					}
 				],
-				"order": 2301,
-				"text": "ui_particle_form",
-				"type": "combo",
-				"value": 1
+				"order" : 1203,
+				"text" : "ui_background_slide_time",
+				"type" : "combo",
+				"value" : 1
 			},
-			"ParticleImage": {
-				"condition": "ShowParticle.value && ParticleShapeType.value == 5",
-				"order": 2302,
-				"text": "ui_particle_form_custom_file",
-				"type": "file"
+			"ParticleBounce" : 
+			{
+				"condition" : "ShowParticle.value && ParticleMove.value",
+				"order" : 2801,
+				"text" : "ui_particle_mirror",
+				"type" : "bool",
+				"value" : false
 			},
-			"ParticleSize": {
-				"condition": "ShowParticle.value",
-				"max": 50,
-				"min": 0,
-				"order": 2303,
-				"text": "ui_particle_size",
-				"type": "slider",
-				"value": 11
+			"ParticleColor" : 
+			{
+				"condition" : "ShowParticle.value",
+				"order" : 2101,
+				"text" : "ui_color",
+				"type" : "color",
+				"value" : "0.5725490196078431 0.37254901960784315 0.2980392156862745"
 			},
-			"ParticleSizeRandom": {
-				"condition": "ShowParticle.value",
-				"order": 2304,
-				"text": "ui_particle_size_random",
-				"type": "bool",
-				"value": true
+			"ParticleCount" : 
+			{
+				"condition" : "ShowParticle.value",
+				"max" : 2000,
+				"min" : 0,
+				"order" : 2002,
+				"text" : "ui_particle_count",
+				"type" : "slider",
+				"value" : 200
 			},
-			"ParticleLinkEnable": {
-				"condition": "ShowParticle.value",
-				"order": 2401,
-				"text": "ui_particle_line",
-				"type": "bool",
-				"value": false
+			"ParticleImage" : 
+			{
+				"condition" : "ShowParticle.value && ParticleShapeType.value == 5",
+				"order" : 2302,
+				"text" : "ui_particle_form_custom_file",
+				"type" : "file"
 			},
-			"ParticleLinkDistance": {
-				"condition": "ShowParticle.value && ParticleLinkEnable.value",
-				"max": 300,
-				"min": 0,
-				"order": 2402,
-				"text": "ui_particle_line_leght",
-				"type": "slider",
-				"value": 60
+			"ParticleLinkColor" : 
+			{
+				"condition" : "ShowParticle.value && ParticleLinkEnable.value",
+				"order" : 2404,
+				"text" : "ui_particle_line_color",
+				"type" : "color",
+				"value" : "1 1 1"
 			},
-			"ParticleLinkWidth": {
-				"condition": "ShowParticle.value && ParticleLinkEnable.value",
-				"max": 10,
-				"min": 0,
-				"order": 2403,
-				"text": "ui_particle_line_size",
-				"type": "slider",
-				"value": 2
+			"ParticleLinkDistance" : 
+			{
+				"condition" : "ShowParticle.value && ParticleLinkEnable.value",
+				"max" : 300,
+				"min" : 0,
+				"order" : 2402,
+				"text" : "ui_particle_line_leght",
+				"type" : "slider",
+				"value" : 60
 			},
-			"ParticleLinkColor": {
-				"condition": "ShowParticle.value && ParticleLinkEnable.value",
-				"order": 2404,
-				"text": "ui_particle_line_color",
-				"type": "color",
-				"value": "1 1 1"
+			"ParticleLinkEnable" : 
+			{
+				"condition" : "ShowParticle.value",
+				"order" : 2401,
+				"text" : "ui_particle_line",
+				"type" : "bool",
+				"value" : false
 			},
-			"ParticleLinkOpacity": {
-				"condition": "ShowParticle.value && ParticleLinkEnable.value",
-				"max": 100,
-				"min": 0,
-				"order": 2405,
-				"text": "ui_particle_line_opacity",
-				"type": "slider",
-				"value": 75
+			"ParticleLinkOpacity" : 
+			{
+				"condition" : "ShowParticle.value && ParticleLinkEnable.value",
+				"max" : 100,
+				"min" : 0,
+				"order" : 2405,
+				"text" : "ui_particle_line_opacity",
+				"type" : "slider",
+				"value" : 75
 			},
-			"ParticleMove": {
-				"condition": "ShowParticle.value",
-				"order": 2501,
-				"text": "ui_particle_move",
-				"type": "bool",
-				"value": true
+			"ParticleLinkWidth" : 
+			{
+				"condition" : "ShowParticle.value && ParticleLinkEnable.value",
+				"max" : 10,
+				"min" : 0,
+				"order" : 2403,
+				"text" : "ui_particle_line_size",
+				"type" : "slider",
+				"value" : 2
 			},
-			"ParticleSpeed": {
-				"condition": "ShowParticle.value && ParticleMove.value",
-				"max": 100,
-				"min": 1,
-				"order": 2502,
-				"text": "ui_particle_move_speed",
-				"type": "slider",
-				"value": 8
+			"ParticleMove" : 
+			{
+				"condition" : "ShowParticle.value",
+				"order" : 2501,
+				"text" : "ui_particle_move",
+				"type" : "bool",
+				"value" : true
 			},
-			"ParticleSpeedRandom": {
-				"condition": "ShowParticle.value && ParticleMove.value",
-				"order": 2503,
-				"text": "ui_particle_move_speed_random",
-				"type": "bool",
-				"value": true
+			"ParticleMoveOutMode" : 
+			{
+				"condition" : "ShowParticle.value && ParticleMove.value",
+				"order" : 2802,
+				"text" : "ui_particle_mode_move",
+				"type" : "bool",
+				"value" : false
 			},
-			"ParticleMusicRandom": {
-				"condition": "ShowParticle.value && ParticleMove.value",
-				"order": 2601,
-				"text": "ui_particle_music_speed",
-				"type": "bool",
-				"value": true
+			"ParticleMoveStraight" : 
+			{
+				"condition" : "ShowParticle.value && ParticleMove.value",
+				"order" : 2703,
+				"text" : "ui_particle_go",
+				"type" : "bool",
+				"value" : false
 			},
-			"ParticleMusicTone": {
-				"condition": "ShowParticle.value && ParticleMusicRandom.value && ParticleMove.value",
-				"options": [
+			"ParticleMoveX" : 
+			{
+				"condition" : "ShowParticle.value && ParticleMove.value",
+				"max" : 100,
+				"min" : -100,
+				"order" : 2701,
+				"text" : "ui_particle_move_dir_x",
+				"type" : "slider",
+				"value" : 100
+			},
+			"ParticleMoveY" : 
+			{
+				"condition" : "ShowParticle.value && ParticleMove.value",
+				"max" : 100,
+				"min" : -100,
+				"order" : 2702,
+				"text" : "ui_particle_move_dir_y",
+				"type" : "slider",
+				"value" : 0
+			},
+			"ParticleMusicRandom" : 
+			{
+				"condition" : "ShowParticle.value && ParticleMove.value",
+				"order" : 2601,
+				"text" : "ui_particle_music_speed",
+				"type" : "bool",
+				"value" : true
+			},
+			"ParticleMusicStrengh" : 
+			{
+				"condition" : "ShowParticle.value && ParticleMusicRandom.value && ParticleMove.value",
+				"max" : 100,
+				"min" : 1,
+				"order" : 2603,
+				"text" : "ui_particle_music_strengh",
+				"type" : "slider",
+				"value" : 100
+			},
+			"ParticleMusicTone" : 
+			{
+				"condition" : "ShowParticle.value && ParticleMusicRandom.value && ParticleMove.value",
+				"options" : 
+				[
 					{
-						"label": "ui_particle_music_bass",
-						"value": 1
+						"label" : "ui_particle_music_bass",
+						"value" : 1
 					},
 					{
-						"label": "ui_particle_music_tenor",
-						"value": 2
+						"label" : "ui_particle_music_tenor",
+						"value" : 2
 					},
 					{
-						"label": "ui_particle_music_mezzo_soprano",
-						"value": 3
+						"label" : "ui_particle_music_mezzo_soprano",
+						"value" : 3
 					},
 					{
-						"label": "ui_particle_music_soprano",
-						"value": 4
+						"label" : "ui_particle_music_soprano",
+						"value" : 4
 					}
 				],
-				"order": 2602,
-				"text": "ui_particle_music_tone",
-				"type": "combo",
-				"value": 4
+				"order" : 2602,
+				"text" : "ui_particle_music_tone",
+				"type" : "combo",
+				"value" : 4
 			},
-			"ParticleMusicStrengh": {
-				"condition": "ShowParticle.value && ParticleMusicRandom.value && ParticleMove.value",
-				"max": 100,
-				"min": 1,
-				"order": 2603,
-				"text": "ui_particle_music_strengh",
-				"type": "slider",
-				"value": 100
+			"ParticleOpacity" : 
+			{
+				"condition" : "ShowParticle.value",
+				"max" : 100,
+				"min" : 0,
+				"order" : 2201,
+				"text" : "ui_opacity",
+				"type" : "slider",
+				"value" : 85
 			},
-			"ParticleMoveX": {
-				"condition": "ShowParticle.value && ParticleMove.value",
-				"max": 100,
-				"min": -100,
-				"order": 2701,
-				"text": "ui_particle_move_dir_x",
-				"type": "slider",
-				"value": 100
+			"ParticleOpacityRandom" : 
+			{
+				"condition" : "ShowParticle.value",
+				"order" : 2202,
+				"text" : "ui_particle_random",
+				"type" : "bool",
+				"value" : true
 			},
-			"ParticleMoveY": {
-				"condition": "ShowParticle.value && ParticleMove.value",
-				"max": 100,
-				"min": -100,
-				"order": 2702,
-				"text": "ui_particle_move_dir_y",
-				"type": "slider",
-				"value": 0
+			"ParticleShadowBlur" : 
+			{
+				"condition" : "ShowParticle.value",
+				"max" : 5,
+				"min" : 0,
+				"order" : 2103,
+				"text" : "ui_particle_blur_size",
+				"type" : "slider",
+				"value" : 0
 			},
-			"ParticleMoveStraight": {
-				"condition": "ShowParticle.value && ParticleMove.value",
-				"order": 2703,
-				"text": "ui_particle_go",
-				"type": "bool",
-				"value": false
+			"ParticleShadowColor" : 
+			{
+				"condition" : "ShowParticle.value",
+				"order" : 2102,
+				"text" : "ui_color_blur",
+				"type" : "color",
+				"value" : "0.5725490196078431 0.37254901960784315 0.2980392156862745"
 			},
-			"ParticleBounce": {
-				"condition": "ShowParticle.value && ParticleMove.value",
-				"order": 2801,
-				"text": "ui_particle_mirror",
-				"type": "bool",
-				"value": false
-			},
-			"ParticleMoveOutMode": {
-				"condition": "ShowParticle.value && ParticleMove.value",
-				"order": 2802,
-				"text": "ui_particle_mode_move",
-				"type": "bool",
-				"value": false
-			},
-			"ui_split_line_2": {
-				"order": 3000,
-				"text": "ui_split_line",
-				"type": "text"
-			},
-			"AudioVisualizeModel": {
-				"options": [
+			"ParticleShapeType" : 
+			{
+				"condition" : "ShowParticle.value",
+				"options" : 
+				[
 					{
-						"label": "ui_audio_visualize_type_none",
-						"value": 0
+						"label" : "ui_particle_form_round",
+						"value" : 1
 					},
 					{
-						"label": "ui_audio_visualize_type_monstercat",
-						"value": 1
+						"label" : "ui_particle_form_square",
+						"value" : 2
+					},
+					{
+						"label" : "ui_particle_form_triangle",
+						"value" : 3
+					},
+					{
+						"label" : "ui_particle_form_star",
+						"value" : 4
+					},
+					{
+						"label" : "ui_particle_form_custom",
+						"value" : 5
 					}
 				],
-				"order": 3001,
-				"text": "ui_audio_visualize_type",
-				"type": "combo",
-				"value": 1
+				"order" : 2301,
+				"text" : "ui_particle_form",
+				"type" : "combo",
+				"value" : 1
 			},
-			"AudioVisualizeMonstercatColor": {
-				"condition": "AudioVisualizeModel.value == 1",
-				"order": 3111,
-				"text": "ui_color",
-				"type": "color",
-				"value": "1 1 1"
+			"ParticleSize" : 
+			{
+				"condition" : "ShowParticle.value",
+				"max" : 50,
+				"min" : 0,
+				"order" : 2303,
+				"text" : "ui_particle_size",
+				"type" : "slider",
+				"value" : 11
 			},
-			"AudioVisualizeMonstercatOpacity": {
-				"condition": "AudioVisualizeModel.value == 1",
-				"max": 100,
-				"min": 0,
-				"order": 3112,
-				"text": "ui_opacity",
-				"type": "slider",
-				"value": 24
+			"ParticleSizeRandom" : 
+			{
+				"condition" : "ShowParticle.value",
+				"order" : 2304,
+				"text" : "ui_particle_size_random",
+				"type" : "bool",
+				"value" : true
 			},
-			"AudioVisualizeMonstercatSmoothing": {
-				"condition": "AudioVisualizeModel.value == 1",
-				"max": 10,
-				"min": 1,
-				"order": 3121,
-				"text": "ui_audio_visualize_monstercat_smash",
-				"type": "slider",
-				"value": 2
+			"ParticleSpeed" : 
+			{
+				"condition" : "ShowParticle.value && ParticleMove.value",
+				"max" : 100,
+				"min" : 1,
+				"order" : 2502,
+				"text" : "ui_particle_move_speed",
+				"type" : "slider",
+				"value" : 8
 			},
-			"AudioVisualizeMonstercatBarWidth": {
-				"condition": "AudioVisualizeModel.value == 1",
-				"max": 100,
-				"min": 1,
-				"order": 3131,
-				"text": "ui_audio_visualize_monstercat_barWidth",
-				"type": "slider",
-				"value": 27
+			"ParticleSpeedRandom" : 
+			{
+				"condition" : "ShowParticle.value && ParticleMove.value",
+				"order" : 2503,
+				"text" : "ui_particle_move_speed_random",
+				"type" : "bool",
+				"value" : true
 			},
-			"AudioVisualizeMonstercatBarPadding": {
-				"condition": "AudioVisualizeModel.value == 1",
-				"max": 35,
-				"min": 0,
-				"order": 3132,
-				"text": "ui_audio_visualize_monstercat_barSpace",
-				"type": "slider",
-				"value": 4
+			"Random" : 
+			{
+				"condition" : "WallpaperMode.value == 2",
+				"order" : 1202,
+				"text" : "ui_background_slide_random",
+				"type" : "bool",
+				"value" : false
 			},
-			"AudioVisualizeMonstercatDouble": {
-				"condition": "AudioVisualizeModel.value == 1",
-				"order": 3143,
-				"text": "ui_audio_visualize_monstercat_double",
-				"type": "bool",
-				"value": false
+			"SelectVideo" : 
+			{
+				"condition" : "WallpaperMode.value == 3",
+				"fileType" : "video",
+				"order" : 1301,
+				"text" : "ui_background_video_custom",
+				"type" : "file",
+				"value" : null
 			},
-			"AudioVisualizeMonstercatReverse": {
-				"condition": "AudioVisualizeModel.value == 1",
-				"order": 3144,
-				"text": "ui_audio_visualize_monstercat_reverse",
-				"type": "bool",
-				"value": false
+			"ShowDate" : 
+			{
+				"order" : 4201,
+				"text" : "ui_date",
+				"type" : "bool",
+				"value" : true
 			},
-			"AudioVisualizeMonstercatPositionX": {
-				"condition": "AudioVisualizeModel.value == 1",
-				"max": 100,
-				"min": 0,
-				"order": 3141,
-				"text": "ui_position_X",
-				"type": "slider",
-				"value": 50
+			"ShowParticle" : 
+			{
+				"order" : 2001,
+				"text" : "ui_particle",
+				"type" : "bool",
+				"value" : true
 			},
-			"AudioVisualizeMonstercatPositionY": {
-				"condition": "AudioVisualizeModel.value == 1",
-				"max": 100,
-				"min": 0,
-				"order": 3142,
-				"text": "ui_position_Y",
-				"type": "slider",
-				"value": 100
+			"ShowTime" : 
+			{
+				"order" : 4101,
+				"text" : "ui_time_time",
+				"type" : "bool",
+				"value" : true
 			},
-			"ui_split_line_3": {
-				"order": 4000,
-				"text": "ui_split_line",
-				"type": "text"
-			},
-			"ShowTime": {
-				"order": 4101,
-				"text": "ui_time_time",
-				"type": "bool",
-				"value": true
-			},
-			"TimeColor": {
-				"condition": "ShowTime.value && TimeColorRhythm.value != true",
-				"order": 4111,
-				"text": "ui_color",
-				"type": "color",
-				"value": "1 1 1"
-			},
-			"TimeBlurColor": {
-				"condition": "ShowTime.value && TimeColorRhythm.value != true",
-				"order": 4112,
-				"text": "ui_color_blur",
-				"type": "color",
-				"value": "0 0 0"
-			},
-			"TimeOpacity": {
-				"condition": "ShowTime.value",
-				"max": 100,
-				"min": 0,
-				"order": 4113,
-				"text": "ui_opacity",
-				"type": "slider",
-				"value": 75
-			},
-			"TimeSize": {
-				"condition": "ShowTime.value",
-				"max": 50,
-				"min": 10,
-				"order": 4121,
-				"text": "ui_size",
-				"type": "slider",
-				"value": 34
-			},
-			"TimeFont": {
-				"condition": "ShowTime.value",
-				"order": 4131,
-				"text": "ui_font",
-				"type": "textinput",
-				"value": "Lato"
-			},
-			"TimeFontDir": {
-				"condition": "(ShowTime.value && TimeFont.value == 'custom') || TimeFontDir.value != ''",
-				"order": 4132,
-				"text": "ui_font_dir",
-				"type": "file",
-				"value": ""
-			},
-			"TimePositionX": {
-				"condition": "ShowTime.value",
-				"max": 100,
-				"min": 0,
-				"order": 4141,
-				"text": "ui_position_X",
-				"type": "slider",
-				"value": 52.45
-			},
-			"TimePositionY": {
-				"condition": "ShowTime.value",
-				"max": 100,
-				"min": 0,
-				"order": 4142,
-				"text": "ui_position_Y",
-				"type": "slider",
-				"value": 67
-			},
-			"TimeAlignment": {
-				"condition": "ShowTime.value",
-				"options": [
+			"TimeAlignment" : 
+			{
+				"condition" : "ShowTime.value",
+				"options" : 
+				[
 					{
-						"label": "ui_left",
-						"value": "left"
+						"label" : "ui_left",
+						"value" : "left"
 					},
 					{
-						"label": "ui_center",
-						"value": "center"
+						"label" : "ui_center",
+						"value" : "center"
 					},
 					{
-						"label": "ui_right",
-						"value": "right"
+						"label" : "ui_right",
+						"value" : "right"
 					}
 				],
-				"order": 4143,
-				"text": "ui_alignment",
-				"type": "combo",
-				"value": "center"
+				"order" : 4143,
+				"text" : "ui_alignment",
+				"type" : "combo",
+				"value" : "center"
 			},
-			"TimeShowSencends": {
-				"condition": "ShowTime.value",
-				"order": 4151,
-				"text": "ui_time_sec",
-				"type": "bool",
-				"value": true
+			"TimeBlurColor" : 
+			{
+				"condition" : "ShowTime.value && TimeColorRhythm.value != true",
+				"order" : 4112,
+				"text" : "ui_color_blur",
+				"type" : "color",
+				"value" : "0 0 0"
 			},
-			"TimeStyle": {
-				"condition": "ShowTime.value",
-				"order": 4152,
-				"text": "ui_time_24",
-				"type": "bool",
-				"value": true
+			"TimeColor" : 
+			{
+				"condition" : "ShowTime.value && TimeColorRhythm.value != true",
+				"order" : 4111,
+				"text" : "ui_color",
+				"type" : "color",
+				"value" : "1 1 1"
 			},
-			"ui_split_line_4": {
-				"order": 4200,
-				"text": "ui_split_line",
-				"type": "text"
+			"TimeFont" : 
+			{
+				"condition" : "ShowTime.value",
+				"order" : 4131,
+				"text" : "ui_font",
+				"type" : "textinput",
+				"value" : "Lato"
 			},
-			"ShowDate": {
-				"order": 4201,
-				"text": "ui_date",
-				"type": "bool",
-				"value": true
+			"TimeFontDir" : 
+			{
+				"condition" : "(ShowTime.value && TimeFont.value == 'custom') || TimeFontDir.value != ''",
+				"order" : 4132,
+				"text" : "ui_font_dir",
+				"type" : "file",
+				"value" : ""
 			},
-			"DateColor": {
-				"condition": "ShowDate.value && DateColorRhythm.value != true",
-				"order": 4211,
-				"text": "ui_color",
-				"type": "color",
-				"value": "1 1 1"
+			"TimeOpacity" : 
+			{
+				"condition" : "ShowTime.value",
+				"max" : 100,
+				"min" : 0,
+				"order" : 4113,
+				"text" : "ui_opacity",
+				"type" : "slider",
+				"value" : 75
 			},
-			"DateBlurColor": {
-				"condition": "ShowDate.value && DateColorRhythm.value != true",
-				"order": 4212,
-				"text": "ui_color_blur",
-				"type": "color",
-				"value": "0.2 0.1568627450980392 0.18823529411764706"
+			"TimePositionX" : 
+			{
+				"condition" : "ShowTime.value",
+				"max" : 100,
+				"min" : 0,
+				"order" : 4141,
+				"text" : "ui_position_X",
+				"type" : "slider",
+				"value" : 52.45
 			},
-			"DateOpacity": {
-				"condition": "ShowDate.value",
-				"max": 100,
-				"min": 0,
-				"order": 4213,
-				"text": "ui_opacity",
-				"type": "slider",
-				"value": 65
+			"TimePositionY" : 
+			{
+				"condition" : "ShowTime.value",
+				"max" : 100,
+				"min" : 0,
+				"order" : 4142,
+				"text" : "ui_position_Y",
+				"type" : "slider",
+				"value" : 67
 			},
-			"DateSize": {
-				"condition": "ShowDate.value",
-				"max": 50,
-				"min": 10,
-				"order": 4221,
-				"text": "ui_size",
-				"type": "slider",
-				"value": 16
+			"TimeShowSencends" : 
+			{
+				"condition" : "ShowTime.value",
+				"order" : 4151,
+				"text" : "ui_time_sec",
+				"type" : "bool",
+				"value" : true
 			},
-			"DateFont": {
-				"condition": "ShowDate.value",
-				"order": 4231,
-				"text": "ui_font",
-				"type": "textinput",
-				"value": "Lato"
+			"TimeSize" : 
+			{
+				"condition" : "ShowTime.value",
+				"max" : 50,
+				"min" : 10,
+				"order" : 4121,
+				"text" : "ui_size",
+				"type" : "slider",
+				"value" : 34
 			},
-			"DateFontDir": {
-				"condition": "(ShowDate.value && DateFont.value == 'custom') || DateFontDir.value != ''",
-				"order": 4232,
-				"text": "ui_font_dir",
-				"type": "file"
+			"TimeStyle" : 
+			{
+				"condition" : "ShowTime.value",
+				"order" : 4152,
+				"text" : "ui_time_24",
+				"type" : "bool",
+				"value" : true
 			},
-			"DateX": {
-				"condition": "ShowDate.value",
-				"max": 100,
-				"min": 0,
-				"order": 4241,
-				"text": "ui_position_X",
-				"type": "slider",
-				"value": 63
+			"VideoVolume" : 
+			{
+				"condition" : "WallpaperMode.value == 3",
+				"max" : 100,
+				"min" : 0,
+				"order" : 1302,
+				"text" : "ui_background_video_volume",
+				"type" : "slider",
+				"value" : 0
 			},
-			"DateY": {
-				"condition": "ShowDate.value",
-				"max": 100,
-				"min": 0,
-				"order": 4242,
-				"text": "ui_position_Y",
-				"type": "slider",
-				"value": 74
-			},
-			"DateAlignment": {
-				"condition": "ShowDate.value",
-				"options": [
+			"WallpaperMode" : 
+			{
+				"options" : 
+				[
 					{
-						"label": "ui_left",
-						"value": "left"
+						"label" : "ui_background_mode_img",
+						"value" : 1
 					},
 					{
-						"label": "ui_center",
-						"value": "center"
+						"label" : "ui_background_mode_slide",
+						"value" : 2
 					},
 					{
-						"label": "ui_right",
-						"value": "right"
+						"label" : "ui_background_mode_video",
+						"value" : 3
+					},
+					{
+						"label" : "ui_background_mode_color",
+						"value" : 4
 					}
 				],
-				"order": 4243,
-				"text": "ui_alignment",
-				"type": "combo",
-				"value": "right"
+				"order" : 1000,
+				"text" : "ui_background_mode",
+				"type" : "combo",
+				"value" : 1
 			},
-			"DateFormat": {
-				"condition": "ShowDate.value",
-				"order": 4251,
-				"text": "ui_date_format",
-				"type": "textinput",
-				"value": "{wek} {YYYY}. {MM}. {DD}."
+			"schemecolor" : 
+			{
+				"order" : 0,
+				"text" : "ui_browse_properties_scheme_color",
+				"type" : "color",
+				"value" : "0 0 0"
 			},
-			"DateFormatDescription": {
-				"condition": "ShowDate.value",
-				"order": 4252,
-				"text": "ui_date_format_description",
-				"type": "text"
+			"ui_split_line_1" : 
+			{
+				"order" : 2000,
+				"text" : "ui_split_line",
+				"type" : "text"
+			},
+			"ui_split_line_2" : 
+			{
+				"order" : 3000,
+				"text" : "ui_split_line",
+				"type" : "text"
+			},
+			"ui_split_line_3" : 
+			{
+				"order" : 4000,
+				"text" : "ui_split_line",
+				"type" : "text"
+			},
+			"ui_split_line_4" : 
+			{
+				"order" : 4200,
+				"text" : "ui_split_line",
+				"type" : "text"
 			}
 		},
-		"supportsaudioprocessing": true
+		"supportsaudioprocessing" : true
 	},
-	"preview": ".\\icon.png",
-	"tags": [
-		""
-	],
-	"title": "BG",
-	"type": "web",
-	"version": 1.0,
-	"visibility": "public",
-	"workshopid": ""
+	"preview" : "icon.png",
+	"tags" : [ "" ],
+	"title" : "BG",
+	"type" : "web",
+	"version" : 2,
+	"visibility" : "private",
+	"workshopid" : "2677221591",
+	"workshopurl" : "steam://url/CommunityFilePage/2677221591"
 }

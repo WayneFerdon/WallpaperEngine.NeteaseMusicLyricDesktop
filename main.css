@@ -75,7 +75,7 @@ video {
 	text-shadow: 0 0 10px white;
 	transform: translate(0%,-50%);
 	z-index:90;
-	font-family:"等线 Light","Microsoft Yahei Light";
+	font-family:"苹方","San Francisco Pro","Hiragino Kaku Gothic Std";
 	font-size:200px;
 	transition: .6s;
 }
@@ -90,7 +90,7 @@ video {
 	transform: translate(0%,-50%);
 
 	z-index:90;
-	font-family:"微软雅黑","Microsoft Yahei";
+	font-family:"苹方","San Francisco Pro","Hiragino Kaku Gothic Std";
 	font-size:50px;
 	transition: .6s;
 }
@@ -194,7 +194,7 @@ video {
 	left:0;
 	text-align:center;
 	color:#fff;
-	font-family:"等线 Light","Microsoft Yahei Light";
+	font-family:"苹方","San Francisco Pro","Hiragino Kaku Gothic Std";
 	font-size:200px;
 	text-shadow: 0 0 10px white;
 	z-index:10;

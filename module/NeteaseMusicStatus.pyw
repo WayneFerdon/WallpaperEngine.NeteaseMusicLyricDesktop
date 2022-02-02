@@ -1,5 +1,7 @@
 import datetime
 import json
+from msilib.schema import DuplicateFile
+from operator import truediv
 import re
 import os
 from os.path import expanduser
@@ -361,7 +363,19 @@ class NeteaseMusicStatus:
                     roma = ""
                 PriorHira = ""
             else:
-                PriorHira = "（" + hira + "）"
+                hiraLen = len(hira)
+                origLen = len(orig)
+                isDuplicated = False
+                for i in range(min(hiraLen,origLen)):
+                    if hira[-i-1] == orig[-i-1]:
+                        isDuplicated = True
+                        continue
+                    if isDuplicated:
+                        orig = orig[0:-i] + "（" + hira[0:-i] + "）" + hira[-i:-1] + hira[-1]
+                        PriorHira = ""
+                    break
+                if not isDuplicated:
+                    PriorHira = "（" + hira + "）"
             LrcConverted += orig + PriorHira
             LrcRomajinn += roma + " "
 

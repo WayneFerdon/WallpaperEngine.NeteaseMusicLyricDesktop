@@ -83,6 +83,7 @@ class NeteaseMusicStatus:
             while True:
                 try:
                     LineIndex += 1
+                    print(LineList[LineIndex])
                     LineData = LineList[LineIndex].decode('utf-8')
                     try:
                         self.CallbackLog(LineData, True)
@@ -411,7 +412,7 @@ class NeteaseMusicStatus:
             Source = ReplaceAll(Source, " 　", "　")
             Source = ReplaceAll(Source, "　 ", "　")
             Source = ReplaceAll(Source, "（ ", "（")
-            return Source.replace("　:", " :").replace(":　", ": ")
+            return Source.replace("　:", " :").replace(":　", ": ").replace("：　","：")
 
         Roma = SimpleFormat(Lrc['Roma'])
         Lrc = SimpleFormat(Lrc['Lrc'])
@@ -420,6 +421,7 @@ class NeteaseMusicStatus:
         if Translation != "":
             Translation = "译：" + Translation + "\t|\t"
         Translation += "音：" + Roma
+        Translation = SimpleFormat(Translation)
 
         return {
             "Lrc": ReplaceAll(Lrc, "  ", " "),

@@ -16,9 +16,11 @@ python: monitor cloudmusic.log and analyze it to get current lrc and plaing stat
 javascript: insert html block in to the wallpaper
 
 **Requirements:** 
-1. python3
-2. other requirement can see imports in [./module/NeteaseMusicStatus.pyw](https://github.com/wayneferdon/WallpaperEngine.NeteaseMusicLyricDesktop/blob/master/module/NeteaseMusicStatus.pyw)
-  ([Line 1](https://github.com/wayneferdon/WallpaperEngine.NeteaseMusicLyricDesktop/blob/master/module/NeteaseMusicStatus.pyw#L1) to [Line 12](https://github.com/wayneferdon/WallpaperEngine.NeteaseMusicLyricDesktop/blob/master/module/NeteaseMusicStatus.pyw#L12))
+1. [Python 3](https://www.python.org/)
+2. [pykakasi](https://github.com/miurahr/pykakasi)
+  >pip install pykakasi
+3. other requirement can see imports in [./module/NeteaseMusicStatus.pyw](https://github.com/wayneferdon/WallpaperEngine.NeteaseMusicLyricDesktop/blob/master/module/NeteaseMusicStatus.pyw)
+  ([Line 3](https://github.com/wayneferdon/WallpaperEngine.NeteaseMusicLyricDesktop/blob/master/module/NeteaseMusicStatus.pyw#L3) to [Line 10](https://github.com/wayneferdon/WallpaperEngine.NeteaseMusicLyricDesktop/blob/master/module/NeteaseMusicStatus.pyw#L10))
 
 **Usage:**
 1. run NeteaseMusicStatus.pyw (defualt by pythonw.exe)

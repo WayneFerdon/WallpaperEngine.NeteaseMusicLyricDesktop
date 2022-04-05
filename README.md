@@ -18,6 +18,7 @@ javascript: insert html block in to the wallpaper
 **Requirements:** 
 1. python3
 2. other requirement can see imports in [./module/NeteaseMusicStatus.pyw](https://github.com/wayneferdon/WallpaperEngine.NeteaseMusicLyricDesktop/blob/master/module/NeteaseMusicStatus.pyw)
+  ([Line 1](https://github.com/wayneferdon/WallpaperEngine.NeteaseMusicLyricDesktop/blob/master/module/NeteaseMusicStatus.pyw#L1) to [Line 12](https://github.com/wayneferdon/WallpaperEngine.NeteaseMusicLyricDesktop/blob/master/module/NeteaseMusicStatus.pyw#L12))
 
 **Usage:**
 1. run NeteaseMusicStatus.pyw (defualt by pythonw.exe)

@@ -1,20 +1,18 @@
+from pykakasi import kakasi
+
 import datetime
 import json
-from msilib.schema import DuplicateFile
-from operator import truediv
 import re
 import os
-from os.path import expanduser
 import requests
 import time
 import sqlite3
 from enum import Enum
-from pykakasi import kakasi
 
 
 APPDATA = os.getenv("LOCALAPPDATA")
-LOGPATH = expanduser(APPDATA + "/Netease/CloudMusic/cloudmusic.log")
-DATABASE = expanduser(APPDATA + "/Netease/CloudMusic/Library/webdb.dat")
+LOGPATH = os.path.expanduser(APPDATA + "/Netease/CloudMusic/cloudmusic.log")
+DATABASE = os.path.expanduser(APPDATA + "/Netease/CloudMusic/Library/webdb.dat")
 OUTPUT = 'OutPut.html'
 HEADERS = {
     'user-agent':

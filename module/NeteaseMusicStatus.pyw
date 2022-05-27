@@ -1,3 +1,4 @@
+from operator import truediv
 from pykakasi import kakasi
 
 import datetime
@@ -11,7 +12,7 @@ from enum import Enum
 
 
 APPDATA = os.getenv("LOCALAPPDATA")
-LOGPATH = os.path.expanduser(APPDATA + "/Netease/CloudMusic/cloudmusic.log")
+LOGPATH = os.path.expanduser(APPDATA + "/Netease/CloudMusic/cloudmusic.elog")
 DATABASE = os.path.expanduser(APPDATA + "/Netease/CloudMusic/Library/webdb.dat")
 OUTPUT = 'OutPut.html'
 HEADERS = {
@@ -76,13 +77,15 @@ class NeteaseMusicStatus:
             raise
 
         LineList = self.GetLastLines(1000000)
+        LineList = self.Decode(LineList[0])
         if LineList is not None:
             LineIndex = -1
             while True:
                 try:
                     LineIndex += 1
-                    print(LineList[LineIndex])
-                    LineData = LineList[LineIndex].decode('utf-8')
+                    # self.Decode(LineList[0])
+
+                    LineData = LineList[LineIndex] # LineList[LineIndex].decode('utf-8')
                     try:
                         self.CallbackLog(LineData, True)
                     except Exception:
@@ -99,6 +102,122 @@ class NeteaseMusicStatus:
             self.GetLrc()
             self.SetCurrentLrc(CurrentTimePosition)
             self.OutPutCurrentLrc()
+
+    def Decode(self,data):
+        a = [
+                [56,"0"],
+                [41,"1"],
+                [26,"2"],
+                [11,"3"],
+                [124,"4"],
+                [109,"5"],
+                [94,"6"],
+                [79,"7"],
+                [176,"8"],
+                [161,"9"],
+                [44,"a"],
+                [31,"b"],
+                [14,"c"],
+                [121,"d"],
+                [104,"e"],
+                [91,"f"],
+                [74,"g"],
+                [181,"h"],
+                [164,"i"],
+                [151,"j"],
+                [12,"C"],
+                [134,"k"],
+                [241,"l"],
+                [224,"m"],
+                [211,"n"],
+                [194,"o"],
+                [60,"p"],
+                # [0,"q"],
+                [30,"r"],
+                [15,"s"],
+                [120,"t"],
+                [105,"u"],
+                # [0,"v"],
+                [75,"w"],
+                # [0,"x"],
+                [165,"y"],
+                [150,"z"],
+                # [0,"A"],
+                [167,"B"],
+                [107,"U"],
+                [123,"D"],
+                [69,"E"],
+                [89,"F"],
+                [72,"G"],
+                # [0,"H"],
+                [166,"I"],
+                # [0,"J"],
+                # [0,"K"],
+                [110,"L"],
+                # [0,"M"],
+                [209,"N"],
+                [192,"O"],
+                # [0,"P"],
+                # [0,"Q"],
+                [28,"R"],
+                [13,"S"],
+                [122,"T"],
+                # [0,"U"],
+                # [0,"V"],
+                [46,"A"],
+                [73,"_w"],
+                # [0,"X"],
+                [148,"Y"],
+                # [0,"Z"],
+                [193,"_"],
+                [177,"("],
+                [133,"["],
+                [227,"]"],
+                [57,""],
+                [25,"[STX]"],
+                [146,":"],
+                [198,"/"],
+                [228,"-"],
+                [130,"+"],
+                [125,"$"],
+                [27,"\""],
+                [162,"\t"],
+                [199,"?"],
+                [245,","],
+                [240,"|"],
+                [215,"."],
+                [145,"\n"],
+                [40,"!"],
+                [243,"L"],
+                [160,")"],
+                [226,"M"],
+                [88,"V"],
+                [90,"v"],
+                [183,"H"],
+                [62,"P"],
+                [45,"q"],
+                [135,"{"],
+                [106,"E"],
+                [29,"E"],
+                [242,""],
+                [229,"="],
+                [225,"}"],
+        ]
+        lista = list()
+        string = ""
+        for eachData in data:
+            found = False
+            for each in a:
+                if(each[0] == eachData):
+                    found = True
+                    string += each[1]
+                    break
+            if not found:
+                if(eachData not in lista):
+                    lista.append(eachData)
+                string += "【" + str(eachData) +"】"
+            continue
+        return string.split()
 
     def GetLastLines(self, Length):
         FilePath = LOGPATH
@@ -193,14 +312,13 @@ class NeteaseMusicStatus:
 
         elif "[info]" in Content:
             Content = Content.strip().strip('\n')
+            print("Content",Content)
             Result = re.split('\\[info]', Content)
             LogInfo = Result[1]
             LogTime = re.split('\\[(.*?)]', Result[0])
-            LogTime = time.mktime(
-                datetime.datetime.fromisoformat(LogTime[3]).timetuple())
-
-            if 'player._$play' in LogInfo:
-                self.CurrentSong = re.split('_', re.split('"', LogInfo)[1])[0]
+            LogTime = time.mktime(datetime.datetime.fromisoformat(LogTime[5]).timetuple())
+            if 'playId' in LogInfo:
+                self.CurrentSong = re.split('_', re.split('"', LogInfo)[3])[0]
                 if not Initializing:
                     self.GetLrc()
                 if self.PlayState != PlayState.EXITED:
@@ -209,11 +327,12 @@ class NeteaseMusicStatus:
                 # require load and resume
                 self.PlayState = PlayState.STOPPED
                 ValidInfo = LogValidInfo.PLAY
-            elif '__onAudioPlayerLoad' in LogInfo:
+            elif 'duration' in LogInfo:
                 self.CurrentSongLength = json.loads(
                     re.split('\t', LogInfo)[0])['duration']
                 ValidInfo = LogValidInfo.LOAD
-            elif '_$setPosition' in LogInfo:
+                print(self.CurrentSongLength)
+            elif 'ratio' in LogInfo:
                 self.LastPosition = json.loads(re.split('\t', LogInfo)[0])[
                     'ratio'] * self.CurrentSongLength
                 ValidInfo = LogValidInfo.SETPOS
@@ -222,16 +341,17 @@ class NeteaseMusicStatus:
                         self.LastResumeTime = LogTime
                     else:
                         self.LastResumeTime = time.time()
-            elif 'player._$resume do' in LogInfo:
+            elif 'player._$resume' in LogInfo:
                 self.PlayState = PlayState.PLAYING
                 self.LastResumeTime = LogTime
                 ValidInfo = LogValidInfo.RESUME
-            elif 'player._$pause do' in LogInfo:
+            elif 'player._$pause' in LogInfo:
                 ValidInfo = LogValidInfo.PAUSE
                 if self.PlayState == PlayState.PLAYING:
                     self.PlayState = PlayState.STOPPED
                     self.LastPosition += LogTime - self.LastResumeTime
                     self.LastPauseTime = LogTime
+
         if ValidInfo == LogValidInfo.NONE:
             return False
         if Initializing:
@@ -526,7 +646,6 @@ class NeteaseMusicStatus:
                     self.NextLrcTime = self.SongLrcKeyTime[CurrentLrcIndex + 1]
                     self.CurrentLrc[2] = self.CurrentSongLrc[self.NextLrcTime]
                 except Exception as e:
-                    # print(e)
                     pass
         else:
             KeyTime = None
@@ -544,7 +663,6 @@ class NeteaseMusicStatus:
                     self.CurrentLrc[2] = {'Lrc': '', 'Translation': ''}
                 self.CurrentLrc[1] = self.CurrentSongLrc[CurrentLrcTime]
             except Exception as e:
-                # print(e)
                 pass
 
 
@@ -645,6 +763,5 @@ if __name__ == '__main__':
         try:
             MainProgress.Start()
         except Exception as e:
-            # print(e)
             MainProgress = NeteaseMusicStatus()
             pass

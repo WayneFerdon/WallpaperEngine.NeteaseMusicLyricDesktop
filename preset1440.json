@@ -1,5 +1,4 @@
 {
-  "AudioVisualizeModel": 1,
   "AudioVisualizeMonstercatBarPadding": 5,
   "AudioVisualizeMonstercatBarWidth": 36.3,
   "AudioVisualizeMonstercatColor": "1 1 1",
@@ -22,7 +21,6 @@
   "DateSize": 16,
   "DateX": 64.25,
   "DateY": 74,
-  "DefaultWallpaper": 2,
   "Foreground": "",
   "ForegroundDisplayStlye": 1,
   "Image": "",

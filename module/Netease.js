@@ -1,4 +1,1 @@
-function setLrcText() {
-    $('#Netease').load('module/OutPut.html');
-}
-setInterval(function () { setLrcText() }, 500)
+setInterval(function () { $('#Netease').load('module/OutPut.html'); }, 1)

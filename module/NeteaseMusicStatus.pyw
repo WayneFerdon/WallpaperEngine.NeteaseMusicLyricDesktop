@@ -1,33 +1,165 @@
-from operator import truediv
-from pykakasi import kakasi
-
-import datetime
+# region import
 import json
+import asyncio
 import re
 import os
+import traceback
 import requests
+import threading
 import time
 import sqlite3
+import ctypes
+import win32com.client as Client
 from enum import Enum
+from datetime import datetime
+from pykakasi import kakasi
+# endregion import
 
+# region constants
+# region log display switch
+ENABLE_ELOG_DISPLAY = True
+ENABLE_LOG = True
+# endregion log display switch
 
+# region paths and default values
+PY_LOG_PATH = "PyLog.log"
 APPDATA = os.getenv("LOCALAPPDATA")
 LOGPATH = os.path.expanduser(APPDATA + "/Netease/CloudMusic/cloudmusic.elog")
 DATABASE = os.path.expanduser(APPDATA + "/Netease/CloudMusic/Library/webdb.dat")
-OUTPUT = 'OutPut.html'
+DATABASE_CURSER_KEY = "SELECT tid, track FROM web_track"
+OUTPUT = "OutPut.html"
+KANJI_LIB = "Hanzi2Kanji.json"
 HEADERS = {
-    'user-agent':
-    'Mozilla/5.0 (Windows NT 10.0; Win64;\x64)\
+    "user-agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64;\x64)\
             AppleWebKit/537.36 (KHTML,like Gecko)\
-            Chrome/80.0.3987.87 Safari/537.36'
+            Chrome/80.0.3987.87 Safari/537.36"
 }
+ZERO_DATETIME = datetime.strptime("0001-01-01T00:00:00.000000+00:00", "%Y-%m-%dT%H:%M:%S.%f%z")
 
+EMPTY_LYRIC = {"Lyric": "", "Translation": ""}
+NULL_LYRIC = {"Lyric": "无歌词", "Translation": ""}
+RELOAD_ATTEMPT = 10
+INITIAL_SELF_LAST_LOG = "INITIAL_SELF_LAST_LOG"
 
+ENCODING = {
+        11:"3",
+        12:"C",
+        13:"S",
+        14:"c",
+        15:"s",
+        25:"[STX]",
+        26:"2",
+        27:"\"",
+        28:"R",
+        29:"B",
+        30:"r",
+        31:"b",
+        40:"!",
+        41:"1",
+        44:"a",
+        45:"q",
+        46:"A",
+        56:"0",
+        57:"",
+        60:"p",
+        62:"P",
+        69:"E",
+        72:"G",
+        73:"_w",
+        74:"g",
+        75:"w",
+        79:"7",
+        88:"V",
+        89:"F",
+        90:"v",
+        91:"f",
+        94:"6",
+        104:"e",
+        105:"u",
+        106:"E",
+        107:"U",
+        108:"G",
+        109:"5",
+        110:"L",
+        120:"t",
+        121:"d",
+        122:"T",
+        123:"D",
+        124:"4",
+        125:"$",
+        130:"+",
+        131:" ",
+        132:"K",
+        133:"[",
+        134:"k",
+        135:"{",
+        145:"\n",
+        146:":",
+        148:"Y",
+        149:"J",
+        150:"z",
+        151:"j",
+        160:")",
+        161:"9",
+        162:"\t",
+        164:"i",
+        165:"y",
+        166:"I",
+        167:"Y",
+        176:"8",
+        177:"(",
+        180:"x",
+        181:"h",
+        183:"H",
+        192:"O",
+        193:"_",
+        194:"o",
+        198:"/",
+        199:"?",
+        209:"N",
+        211:"n",
+        215:".",
+        224:"m",
+        225:"}",
+        226:"M",
+        227:"]",
+        228:"-",
+        229:"=",
+        240:"|",
+        241:"l",
+        242:"",
+        243:"L",
+        245:",",
+}
+# endregion paths and default values
+
+# region print color
+STD_INPUT_HANDLE = -10
+STD_OUTPUT_HANDLE = -11
+STD_ERROR_HANDLE = -12
+# text colors
+FOREGROUND_GREY = 0x08  # grey.
+FOREGROUND_BLUE = 0x09  # blue.
+FOREGROUND_GREEN = 0x0a  # green.
+FOREGROUND_RED = 0x0c  # red.
+FOREGROUND_YELLOW = 0x0e  # yellow.
+# background colors
+BACKGROUND_BLUE = 0x90  # yellow.
+BACKGROUND_GREEN = 0xa0  # yellow.
+BACKGROUND_RED = 0xc0  # yellow.
+BACKGROUND_YELLOW = 0xe0  # yellow.
+# get handle
+std_out_handle = ctypes.windll.kernel32.GetStdHandle(STD_OUTPUT_HANDLE)
+shell = Client.Dispatch("WScript.Shell")
+# endregion print color
+# endregion constants
+
+# region enums
 class PlayState(Enum):
     STOPPED = 0
     PLAYING = 1
     EXITED = 2
-
 
 class LogValidInfo(Enum):
     NONE = 0
@@ -37,731 +169,740 @@ class LogValidInfo(Enum):
     SETPOS = 4
     RESUME = 5
     PAUSE = 6
+# endregion enums
 
-
+# region class NeteaseMusicStatus:
 class NeteaseMusicStatus:
+    # region main methods
     def __init__(self):
+        LogMain("Initialization Start")
+        self.__InitializeVariables__()
+        self.__InitializeHanzi2KanjiLib__()
+        self.__InitializeExistingElogInfos__()
+        self.__InitializeExistingLyricOutput__()
+        self.IsInitializing = False
+        LogMain("Initialization End")
+    
+    def __InitializeVariables__(self) :
+        self.LogCount = 0
         self.PlayState = PlayState.STOPPED
         self.CurrentSong = False
-        self.CurrentSongLrc = dict()
+        self.CurrentSongLyric = dict()
         self.CurrentSongLength = 0
-        self.LastUpdate = 0
+        self.LastUpdate = ZERO_DATETIME
         self.kakasi = kakasi()
+        self.LastestLog = INITIAL_SELF_LAST_LOG
 
         self.LastResumeTime = 0
         self.LastPauseTime = 0
         self.LastPosition = 0
-        self.CurrentLrc = [
-            {'Lrc': '', 'Translation': ''},
-            {'Lrc': '', 'Translation': ''},
-            {'Lrc': '', 'Translation': ''}
+        self.CurrentLyric = [
+            EMPTY_LYRIC,
+            EMPTY_LYRIC,
+            EMPTY_LYRIC
         ]
-        self.NextLrcTime = 0
 
-        self.SongLrcKeyTime = list()
-        self.OutPutHtml = str()
-        self.LocalMusicInfo = LoadSongDataBase()
+        self.LOG_TYPE = {
+            "player._$play":{
+                "Method": self.OnPlay,
+                "State": LogValidInfo.PLAY,
+            },
+            "???__onAudioPlayerLoad":{
+                "Method": self.OnLoadDuration,
+                "State": LogValidInfo.LOAD,
+            },
+            "???_$setPosition":{
+                "Method": self.OnSetPosition,
+                "State": LogValidInfo.SETPOS,
+            },
+            "player._$resumedo":{
+                "Method": self.OnResume,
+                "State": LogValidInfo.RESUME,
+            },
+            "player._$pausedo":{
+                "Method": self.OnPause,
+                "State": LogValidInfo.PAUSE,
+            },
+        }
 
-        with open("./Hanzi2Kanji.json", "r") as KanjiLib:
-            self.Hanzi2KanjiLib = KanjiLib.readlines()
-        LibJson = ""
-        for line in self.Hanzi2KanjiLib:
-            LibJson += line
-        self.Hanzi2KanjiLib = json.loads(LibJson)
+        self.NextLyricTime = 0
+        self.SongLyricTimes = list()
+        self.OutPutHtml = ""
+        self.LocalMusicInfo = self.LoadSongDataBase()
+        self.IsInitializing = True
 
-        try:
-            self.LogFile = open(LOGPATH, 'r', encoding='utf-8')
-            self.FileSize = os.path.getsize(LOGPATH)
-            self.LogFile.seek(0, 2)
-        except Exception:
-            raise
+        self.CoroutineFixUpdate = self.FixUpdate()
+        self.CoroutineUpdate = self.Update()
+        self.FixUpdateLoop = asyncio.new_event_loop()
+        self.UpdateLoop = asyncio.new_event_loop()
+        self.ThreadFixUpdate = threading.Thread(target=self.StartLoop, args=(self.FixUpdateLoop,))
+        self.ThreadUpdate = threading.Thread(target=self.StartLoop, args=(self.UpdateLoop,))
 
-        LineList = self.GetLastLines(1000000)
-        LineList = self.Decode(LineList[0])
-        if LineList is not None:
-            LineIndex = -1
-            while True:
-                try:
-                    LineIndex += 1
-                    # self.Decode(LineList[0])
+    def __InitializeHanzi2KanjiLib__(self) :
+        with open(KANJI_LIB, "r") as kanjiLib:
+            self.Hanzi2KanjiLib = kanjiLib.readlines()
+        libJson = ""
+        for data in self.Hanzi2KanjiLib:
+            libJson += data
+        self.Hanzi2KanjiLib = json.loads(libJson)
 
-                    LineData = LineList[LineIndex] # LineList[LineIndex].decode('utf-8')
-                    try:
-                        self.CallbackLog(LineData, True)
-                    except Exception:
-                        pass
-                except IndexError:
-                    break
-        with open(OUTPUT, 'w', encoding='utf-8') as OutPutFile:
-            OutPutFile.write('')
+    def __InitializeExistingElogInfos__(self) :
+        self.LogFile = open(LOGPATH, "rb")
+        self.FileSize = os.path.getsize(LOGPATH)
+        self.latestOffset = self.FileSize
+        self.InitializeSeekPosition()
+        self.Analysis()
 
+    def InitializeSeekPosition(self):
+        self.LogFile.seek(max(self.latestOffset-200000,0), 0)
+
+    def __InitializeExistingLyricOutput__(self):
+        self.WriteOutPut("")
         if self.CurrentSong:
-            CurrentTimePosition = self.LastPosition
+            currentTimePosition = self.LastPosition
             if self.PlayState == PlayState.PLAYING:
-                CurrentTimePosition += time.time() - self.LastResumeTime
-            self.GetLrc()
-            self.SetCurrentLrc(CurrentTimePosition)
-            self.OutPutCurrentLrc()
+                currentTimePosition += time.time() - self.LastResumeTime
+            self.GetLyric()
+            self.OutPutCurrentLyric(currentTimePosition)
 
-    def Decode(self,data):
-        a = [
-                [56,"0"],
-                [41,"1"],
-                [26,"2"],
-                [11,"3"],
-                [124,"4"],
-                [109,"5"],
-                [94,"6"],
-                [79,"7"],
-                [176,"8"],
-                [161,"9"],
-                [44,"a"],
-                [31,"b"],
-                [14,"c"],
-                [121,"d"],
-                [104,"e"],
-                [91,"f"],
-                [74,"g"],
-                [181,"h"],
-                [164,"i"],
-                [151,"j"],
-                [12,"C"],
-                [134,"k"],
-                [241,"l"],
-                [224,"m"],
-                [211,"n"],
-                [194,"o"],
-                [60,"p"],
-                # [0,"q"],
-                [30,"r"],
-                [15,"s"],
-                [120,"t"],
-                [105,"u"],
-                # [0,"v"],
-                [75,"w"],
-                # [0,"x"],
-                [165,"y"],
-                [150,"z"],
-                # [0,"A"],
-                [167,"B"],
-                [107,"U"],
-                [123,"D"],
-                [69,"E"],
-                [89,"F"],
-                [72,"G"],
-                # [0,"H"],
-                [166,"I"],
-                # [0,"J"],
-                # [0,"K"],
-                [110,"L"],
-                # [0,"M"],
-                [209,"N"],
-                [192,"O"],
-                # [0,"P"],
-                # [0,"Q"],
-                [28,"R"],
-                [13,"S"],
-                [122,"T"],
-                # [0,"U"],
-                # [0,"V"],
-                [46,"A"],
-                [73,"_w"],
-                # [0,"X"],
-                [148,"Y"],
-                # [0,"Z"],
-                [193,"_"],
-                [177,"("],
-                [133,"["],
-                [227,"]"],
-                [57,""],
-                [25,"[STX]"],
-                [146,":"],
-                [198,"/"],
-                [228,"-"],
-                [130,"+"],
-                [125,"$"],
-                [27,"\""],
-                [162,"\t"],
-                [199,"?"],
-                [245,","],
-                [240,"|"],
-                [215,"."],
-                [145,"\n"],
-                [40,"!"],
-                [243,"L"],
-                [160,")"],
-                [226,"M"],
-                [88,"V"],
-                [90,"v"],
-                [183,"H"],
-                [62,"P"],
-                [45,"q"],
-                [135,"{"],
-                [106,"E"],
-                [29,"E"],
-                [242,""],
-                [229,"="],
-                [225,"}"],
-        ]
-        lista = list()
-        string = ""
-        for eachData in data:
-            found = False
-            for each in a:
-                if(each[0] == eachData):
-                    found = True
-                    string += each[1]
-                    break
-            if not found:
-                if(eachData not in lista):
-                    lista.append(eachData)
-                string += "【" + str(eachData) +"】"
-            continue
-        return string.split()
-
-    def GetLastLines(self, Length):
-        FilePath = LOGPATH
+    def StartLoop(self, loop):
+        asyncio.set_event_loop(loop)
+        loop.run_forever()
+    
+    def Start(self):
         try:
-            FileSize = os.path.getsize(FilePath)
-            if FileSize == 0:
-                return None
-            else:
-                # to use seek from end, must use mode 'rb'
-                with open(FilePath, 'rb') as TargetFile:
-                    Offset = -Length  # initialize offset
-                    while -Offset < FileSize:  # offset cannot exceed file size
-                        # read offset chars from eof(represent by number'2')
-                        TargetFile.seek(Offset, 2)
-                        Lines = TargetFile.readlines()  # read from fp to eof
-                        if len(Lines) >= 2:  # if contains at least 2 lines
-                            return Lines  # then last line is totally included
-                        else:
-                            Offset *= 2  # enlarge offset
-                    TargetFile.seek(0)
-                    return TargetFile.readlines()
-        except FileNotFoundError:
-            return None, False
+            self.ModifiedTime = 0
+            self.ThreadFixUpdate.start()
+            self.ThreadUpdate.start()
+            asyncio.run_coroutine_threadsafe(self.CoroutineFixUpdate,self.FixUpdateLoop)
+            asyncio.run_coroutine_threadsafe(self.CoroutineUpdate,self.UpdateLoop)
+        except Exception as e:
+            with open(PY_LOG_PATH, "a", encoding="utf-8") as logFile:
+                logFile.write(LogError(e,"\n",traceback.format_exc()))
+            self.Start()
 
-    def GetSongNameAndArtists(self):
-        Result = dict()
-        if str(self.CurrentSong) in self.LocalMusicInfo.keys():
-            try:
-                JsonDate = json.loads(
-                    self.LocalMusicInfo[str(self.CurrentSong)])
-                SongName = JsonDate["album"]["name"]
-                Artists = JsonDate['artists']
-                SongArtist = 'by: '
-                for Artist in Artists:
-                    if SongArtist != 'by: ':
-                        SongArtist += ' / '
-                    SongArtist += Artist['name']
-                Result = {
-                    0: {'Lrc': '无歌词', 'Translation': ''},
-                    1: {'Lrc': SongName, 'Translation': ''},
-                    float("inf"): {'Lrc': SongArtist, 'Translation': ''}
-                }
-            except KeyError:
-                pass
-        if not Result:
-            Url = 'https://music.163.com/api/song/detail/' \
-                  '?id=' + str(self.CurrentSong) + \
-                  '&ids=[' + str(self.CurrentSong) + ']'
-            JsonDate = json.loads(requests.get(Url, headers=HEADERS).text)
-            JsonDate = JsonDate['songs'][0]
-            SongName = JsonDate['name']
-            Artists = JsonDate['artists']
-            SongArtist = 'by: '
-            for Artist in Artists:
-                if SongArtist != 'by: ':
-                    SongArtist += ' / '
-                SongArtist += Artist['name']
-            if SongArtist != 'by: ':
-                Result = {
-                    0: {'Lrc': '无歌词', 'Translation': ''},
-                    1: {'Lrc': SongName, 'Translation': ''},
-                    float("inf"): {'Lrc': SongArtist, 'Translation': ''}
-                }
-            else:
-                Result[0] = {'Lrc': '无歌词', 'Translation': ''}
-        return Result
-
-    def ReloadMonitorPath(self):
-        try:
-            self.LogFile.close()
-        except Exception:
-            pass
-        try:
-            self.LogFile.close()
-            self.LogFile = open(LOGPATH, "rb")
-            self.FileSize = os.path.getsize(LOGPATH)
-            self.LogFile.seek(0, 1)
-            return True
-        except Exception:
-            return False
-
-    def CallbackLog(self, Content, Initializing=False):
-        ValidInfo = LogValidInfo.NONE
-        LogTime = 0
-
-        if 'App exit' in Content:
-            if self.PlayState == PlayState.PLAYING:
-                self.LastPosition += time.time() - self.LastResumeTime
-            self.PlayState = PlayState.EXITED
-            LogTime = time.time()
-            ValidInfo = LogValidInfo.APPEXIT
-
-        elif "[info]" in Content:
-            Content = Content.strip().strip('\n')
-            print("Content",Content)
-            Result = re.split('\\[info]', Content)
-            LogInfo = Result[1]
-            LogTime = re.split('\\[(.*?)]', Result[0])
-            LogTime = time.mktime(datetime.datetime.fromisoformat(LogTime[5]).timetuple())
-            if 'playId' in LogInfo:
-                self.CurrentSong = re.split('_', re.split('"', LogInfo)[3])[0]
-                if not Initializing:
-                    self.GetLrc()
-                if self.PlayState != PlayState.EXITED:
-                    self.LastPosition = 0
-
-                # require load and resume
-                self.PlayState = PlayState.STOPPED
-                ValidInfo = LogValidInfo.PLAY
-            elif 'duration' in LogInfo:
-                self.CurrentSongLength = json.loads(
-                    re.split('\t', LogInfo)[0])['duration']
-                ValidInfo = LogValidInfo.LOAD
-                print(self.CurrentSongLength)
-            elif 'ratio' in LogInfo:
-                self.LastPosition = json.loads(re.split('\t', LogInfo)[0])[
-                    'ratio'] * self.CurrentSongLength
-                ValidInfo = LogValidInfo.SETPOS
-                if self.PlayState == PlayState.PLAYING:
-                    if Initializing:
-                        self.LastResumeTime = LogTime
-                    else:
-                        self.LastResumeTime = time.time()
-            elif 'player._$resume' in LogInfo:
-                self.PlayState = PlayState.PLAYING
-                self.LastResumeTime = LogTime
-                ValidInfo = LogValidInfo.RESUME
-            elif 'player._$pause' in LogInfo:
-                ValidInfo = LogValidInfo.PAUSE
-                if self.PlayState == PlayState.PLAYING:
-                    self.PlayState = PlayState.STOPPED
-                    self.LastPosition += LogTime - self.LastResumeTime
-                    self.LastPauseTime = LogTime
-
-        if ValidInfo == LogValidInfo.NONE:
-            return False
-        if Initializing:
-            if (
-                self.CurrentSong
-                and self.CurrentSongLength
-                and self.LastPosition
-            ):
-                return True
-            self.LastUpdate = LogTime
-            return False
-        if ValidInfo in [LogValidInfo.SETPOS, LogValidInfo.RESUME]:
-            self.SetCurrentLrc(self.LastPosition)
-            self.OutPutCurrentLrc()
-        if ValidInfo == LogValidInfo.APPEXIT:
-            with open(OUTPUT, 'w', encoding='utf-8') as OutPutFile:
-                OutPutFile.write('')
-        return True
-
-    def Start(self, Interval=0.001):
-        LogFile = LOGPATH
+    async def FixUpdate(self):
+        await asyncio.sleep(0)
         while True:
-            FileSize = os.path.getsize(LogFile)
-            if FileSize < self.FileSize:
-                TryCount = 0
-                while TryCount < 10:
-                    if not self.ReloadMonitorPath():
-                        TryCount += 1
-                    else:
-                        TryCount = 0
-                        self.FileSize = os.path.getsize(LogFile)
-                        break
-                    time.sleep(0.1)
+            # sleep to prevent Thread lock and conflict with self.Update()
+            time.sleep(0.001)
+            self.OutPutCurrentLyric()
+    
+    async def Update(self):
+        await asyncio.sleep(0)
+        while True:
+            time.sleep(0.001)
+            modifiedTime = os.path.getmtime(LOGPATH)
+            if self.ModifiedTime >= modifiedTime:
+                continue
+            self.ModifiedTime = modifiedTime
+            self.CheckFileSize()
+            self.Analysis()
+    # endregion main methods
 
-                if TryCount == 10:
-                    raise Exception("Open %s failed after try 10 times"
-                                    % LogFile)
-            else:
-                self.FileSize = FileSize
-            CurrentPosition = self.LogFile.tell()
-            Line = self.LogFile.readline()
-            if not Line:
-                self.LogFile.seek(CurrentPosition)
-            elif not Line.endswith("\n"):
-                self.LogFile.seed(CurrentPosition)
-            else:
-                self.CallbackLog(Line)
-            time.sleep(Interval)
-            if self.PlayState == PlayState.PLAYING:
-                self.SetCurrentLrc()
-                self.OutPutCurrentLrc()
+    # region Read File and Analysis Logs
+    def Analysis(self):
+        lines = self.GetDecodedLastestLines()
+        if self.LastestLog == INITIAL_SELF_LAST_LOG:
+            newLines = lines
+        else:
+            lines.reverse()
+            newLines = list()
+            for line in lines:
+                if line == self.LastestLog:
+                    break
+                newLines.insert(0, line)
+        for line in newLines:
+            self.AnalysisLog(line)
+        if len(newLines)>0:
+            self.LastestLog = newLines[-1]
+    
+    def GetDecodedLastestLines(self):
+        lines = self.GetLastLines()
+        result = list()
+        isStart = True
+        for each in lines:
+            if not isStart:
+                result.append(b"\n")
+            result += each
+            isStart = False
+        result = self.Decode(result)
+        return result
 
-    def OutPutCurrentLrc(self):
-        NewOutPut = GetOutPut(self.CurrentLrc)
-        if NewOutPut == self.OutPutHtml:
+    def GetLastLines(self):
+        try:
+            self.FileSize = os.path.getsize(LOGPATH)
+            if self.FileSize == 0:
+                return None
+            # to use seek from end, must use mode "rb"
+            if self.latestOffset <= self.FileSize:
+                lines = self.LogFile.readlines()
+                return lines
+            self.InitializeSeekPosition()
+            return self.LogFile.readlines()
+        except FileNotFoundError:
+            return None
+    
+    def CheckFileSize(self):
+        currentFileSize = os.path.getsize(LOGPATH)
+        if currentFileSize >= self.FileSize:
+            self.FileSize = currentFileSize
             return
-        with open(OUTPUT, 'w', encoding='utf-8') as OutPutFile:
-            OutPutFile.write(NewOutPut)
-        self.OutPutHtml = NewOutPut
-
-    @staticmethod
-    def GetSplitTimeLrc(LrcList):
-        NewList = dict()
-        if LrcList:
-            LrcList = re.split('\n', LrcList)
-        for LrcItem in LrcList:
-            LrcItem = re.split('\\[(.*?)]', LrcItem)
+        self.InitializeSeekPosition()
+        for i in range(RELOAD_ATTEMPT):
             try:
-                LrcTime = LrcItem[1]
-                if 'by' in LrcTime:
-                    continue
-                LrcItem = LrcItem[2]
-                if LrcItem == '':
-                    continue
-                LrcTime = re.split('\\:', LrcTime.replace(".", ":"))
-                Minute = int(LrcTime[0])
-                Second = int(LrcTime[1])
-                try:
-                    Millisecond = int(LrcTime[2])
-                except IndexError:
-                    Millisecond = 0
-                LrcTime = Minute * 60000 + Second * 1000 + Millisecond
-                NewList[LrcTime] = LrcItem
+                self.LogFile.close()
             except Exception:
                 pass
-        return NewList
+            try:
+                self.LogFile.close()
+                self.LogFile = open(LOGPATH, "rb")
+                self.FileSize = os.path.getsize(LOGPATH)
+                return
+            except Exception:
+                if i == RELOAD_ATTEMPT - 1:
+                    raise Exception("Open %s failed after try 10 times" % LOGPATH)
+                time.sleep(1)
 
-    def GetHiraganaLrc(self, Lrc):
-        LrcSplit = list()
-        for Split in Lrc:
-            for each in self.kakasi.convert(Split):
-                for Item in SplitAll(each['orig'], "(（.*?）){1}"):
-                    LrcSplit += self.kakasi.convert(Item)
-        LrcConverted = ""
-        LrcRomajinn = ""
-        PriorHira = ""
-        IsPreJP = True
+    def AnalysisLog(self, content):
+        if ENABLE_ELOG_DISPLAY and not self.IsInitializing:
+            LogElog(content)
+        try:
+            validInfo = self.CheckAppExit(content)
+            if validInfo == LogValidInfo.NONE:
+                validInfo = self.CheckLogInfo(content, self.IsInitializing)
+            if validInfo == LogValidInfo.NONE or self.IsInitializing:
+                return
+        except Exception as e:
+            exceptionInfo = traceback.format_exc()
+            LogError(e,"\n",exceptionInfo)
+            return
+        if validInfo in [LogValidInfo.SETPOS, LogValidInfo.RESUME]:
+            self.OutPutCurrentLyric(self.LastPosition)
+        if validInfo == LogValidInfo.APPEXIT:
+            self.WriteOutPut("")
 
-        for Split in LrcSplit:
-            orig = Split['orig']
-            hira = Split['hira']
-            roma = Split['hepburn']
-            if not IsPreJP:
-                orig = orig.replace("　", " ")
-            if IsOnlyEnglishOrPunctuation(orig):
-                LrcConverted += orig + " "
-                LrcRomajinn += orig + " "
-                PriorHira = ""
-                IsPreJP = False
-                continue
-            IsPreJP = True
-            if hira == "":
-                KanjiLrc = ""
-                for EachStr in orig:
-                    if EachStr in self.Hanzi2KanjiLib.keys():
-                        KanjiLrc += self.Hanzi2KanjiLib[EachStr][0]
-                    else:
-                        KanjiLrc += EachStr
-                orig = KanjiLrc
-                hira = ""
-                roma = ""
-                for newEach in kakasi().convert(orig):
-                    hira += newEach['hira']
-                    roma += newEach['hepburn']
-            if hira == orig:
-                if hira == PriorHira:
-                    orig = ""
-                    roma = ""
-                PriorHira = ""
+    def CheckAppExit(self, content):
+        if "Appexit." not in content:
+            return LogValidInfo.NONE
+        if self.PlayState == PlayState.PLAYING:
+            self.LastPosition += time.time() - self.LastResumeTime
+        self.PlayState = PlayState.EXITED
+
+        if self.LastUpdate == ZERO_DATETIME:
+            year = datetime.fromtimestamp(os.path.getctime(LOGPATH)).year
+        else:
+            year = self.LastUpdate.year
+        
+        zoneOffset = (datetime.now()-datetime.now().utcnow()).seconds/3600
+        zoneOffsetStr = str(int(zoneOffset)) + ":00"
+        if zoneOffset < 10:
+            zoneOffsetStr = "0" + zoneOffsetStr
+        
+        logTimeStr = str(year) + re.split(":",re.split("\\[(.*?)]", content)[1])[2] + ".000001+" + zoneOffsetStr
+        logTime = datetime.strptime(logTimeStr, "%Y%m%d/%H%M%S.%f%z")
+        if logTime < self.LastUpdate:
+            return
+        self.LastUpdate = logTime
+        LogInfo(logTime, "App Exit")
+        return LogValidInfo.APPEXIT
+
+    def CheckLogInfo(self, content, isInitializing):
+        if "[info]" not in content:
+            return LogValidInfo.NONE
+        result = re.split("\\[info]", content.strip().strip("\n"))
+        logTimeStr = re.split("\\[(.*?)]", result[0])[5]
+        logTime = datetime.strptime(logTimeStr, "%Y-%m-%dT%H:%M:%S.%f%z")
+        if logTime < self.LastUpdate:
+            return LogValidInfo.NONE
+        self.LastUpdate = logTime
+        logInfo = result[1]
+        for each in self.LOG_TYPE:
+            if each in logInfo:
+                self.LOG_TYPE[each]["Method"](logTime, logInfo, isInitializing)
+                return self.LOG_TYPE[each]["State"]
+        return LogValidInfo.NONE
+
+    def OnPlay(self, logTime, logInfo, isInitializing):
+        self.CurrentSong = re.split("_", re.split("\"", logInfo)[1])[0]
+        if not isInitializing:
+            self.GetLyric()
+        if self.PlayState != PlayState.EXITED:
+            self.LastPosition = 0
+        self.NextLyricTime = 0
+        # require load and resume next
+        self.PlayState = PlayState.STOPPED
+        LogInfo(logTime, "Play song:", self.CurrentSong)
+
+    def OnLoadDuration(self, logTime, logInfo, isInitializing):
+        self.CurrentSongLength = json.loads(
+            re.split("\t", logInfo)[0])["duration"]
+        LogInfo(logTime, "Load Duration:", self.CurrentSongLength)
+
+    def OnSetPosition(self, logTime, logInfo, isInitializing):
+        self.LastPosition = json.loads(logInfo.split("\t")[0])["ratio"] * self.CurrentSongLength
+        if self.PlayState == PlayState.PLAYING:
+            self.LastResumeTime = logTime.timestamp()
+        LogInfo(logTime, "Set Position:", self.LastPosition)
+
+    def OnResume(self, logTime, logInfo, isInitializing):
+        self.PlayState = PlayState.PLAYING
+        self.LastResumeTime = logTime.timestamp()
+        LogInfo(logTime, "Resume")
+
+    def OnPause(self, logTime, logInfo, isInitializing):
+        if self.PlayState == PlayState.PLAYING:
+            self.LastPosition += logTime.timestamp() - self.LastResumeTime
+            self.LastPauseTime = logTime.timestamp()
+        self.PlayState = PlayState.STOPPED
+
+    @staticmethod
+    def Decode(datas):
+        stringList = list()
+        keys = ENCODING.keys()
+        for data in datas:
+            isFound = data in keys
+            if isFound:
+                stringList.append(ENCODING[data])
             else:
-                hiraLen = len(hira)
-                origLen = len(orig)
+                stringList.append("【" + str(data) +"】")
+            continue
+        resultList = list()
+        for each in "".join(stringList).split("\n"):
+            if each != "":
+                resultList.append(each)
+        return resultList
+    # endregion Read File and Analysis Logs
+    
+    # region Lyric methods
+    def GetSongNameAndArtists(self):
+        def FormatOutPut(songName, songArtist):
+            return {
+                    0: NULL_LYRIC,
+                    1: {"Lyric": songName, "Translation": ""},
+                    float("inf"): {"Lyric": songArtist, "Translation": ""}
+            }
+
+        result = dict()
+        if str(self.CurrentSong) in self.LocalMusicInfo.keys():
+            try:
+                jsonDate = json.loads(
+                    self.LocalMusicInfo[str(self.CurrentSong)])
+                songName = jsonDate["album"]["name"]
+                artists = jsonDate["artists"]
+                songArtist = "by: "
+                for artist in artists:
+                    if songArtist != "by: ":
+                        songArtist += " / "
+                    songArtist += artist["name"]
+                result = FormatOutPut(songName, songArtist)
+            except KeyError:
+                pass
+        if not result:
+            url = "https://music.163.com/api/song/detail/" \
+                  "?id=" + str(self.CurrentSong) + \
+                  "&ids=[" + str(self.CurrentSong) + "]"
+            jsonDate = json.loads(requests.get(url, headers=HEADERS).text)
+            jsonDate = jsonDate["songs"][0]
+            songName = jsonDate["name"]
+            artists = jsonDate["artists"]
+            songArtist = "by: "
+            for artist in artists:
+                if songArtist != "by: ":
+                    songArtist += " / "
+                songArtist += artist["name"]
+            if songArtist != "by: ":
+                result = FormatOutPut(songName, songArtist)
+            else:
+                result[0] = NULL_LYRIC
+        return result
+
+    def OutPutCurrentLyric(self, targetTime=None):
+        if targetTime is None:
+            if not self.TryAutoUpdateLyric():
+                return
+        else:
+            if not self.TrySetCurrentLyric(targetTime):
+                return
+        
+        newOutPut = self.GetOutPut()
+        if newOutPut == self.OutPutHtml:
+            return
+        self.WriteOutPut(newOutPut)
+        self.OutPutHtml = newOutPut
+
+    def GetHiraganaLyric(self, lyric):
+        lyricSplit = list()
+        for split in lyric:
+            for each in self.kakasi.convert(split):
+                for Item in SplitAll(each["orig"], "(（.*?）){1}"):
+                    lyricSplit += self.kakasi.convert(Item)
+        lyricConverted, lyricRomajinn, priorHira = "","",""
+        isJapanese = True
+
+        for split in lyricSplit:
+            orig, hira, roma = split["orig"], split["hira"], split["hepburn"]
+            # check if the previous split is japanese, then check current
+            if not isJapanese:
+                orig = orig.replace("　", " ")
+            isJapanese = not IsOnlyEnglishOrPunctuation(orig)
+            if not isJapanese:
+                lyricConverted += orig + " "
+                lyricRomajinn += orig + " "
+                priorHira = ""
+                continue
+            if hira == "":
+                kanjiLyric = ""
+                for each in orig:
+                    if each in self.Hanzi2KanjiLib.keys():
+                        kanjiLyric += self.Hanzi2KanjiLib[each][0]
+                    else:
+                        kanjiLyric += each
+                orig, roma = kanjiLyric, ""
+                for each in kakasi().convert(orig):
+                    hira += each["hira"]
+                    roma += each["hepburn"]
+            if hira == orig:
+                if hira == priorHira:
+                    orig, roma = "", ""
+                priorHira = ""
+            else:
                 isDuplicated = False
-                for i in range(min(hiraLen,origLen)):
+                for i in range(min(len(hira), len(orig))):
                     if hira[-i-1] == orig[-i-1]:
                         isDuplicated = True
                         continue
                     if isDuplicated:
-                        orig = orig[0:-i] + "（" + hira[0:-i] + "）" + hira[-i:-1] + hira[-1]
-                        PriorHira = ""
+                        orig = orig[0:-i] + "（" + hira[0:-i] + "）" + hira[-i:] + hira[-1]
+                        priorHira = ""
                     break
                 if not isDuplicated:
-                    PriorHira = "（" + hira + "）"
-            LrcConverted += orig + PriorHira
-            LrcRomajinn += roma + " "
+                    priorHira = "（" + hira + "）"
+            lyricConverted += orig + priorHira
+            lyricRomajinn += roma + " "
 
         return {
-            "Lrc": LrcConverted,
-            "Roma": LrcRomajinn
+            "Lyric": lyricConverted,
+            "Roma": lyricRomajinn
         }
 
-    def SplitLrc(self, Lrc):
-        Lrc = Lrc\
+    def SplitLyric(self, lyric):
+        lyric = lyric\
             .replace("(", "（")\
             .replace(")", "）")\
             .replace(" ", "　")\
             .replace("　", "//split//　//split//")\
             .replace("、", "//split//、//split//")\
             .replace("。", "//split//、//split//")
-        Lrc = re.split("//split//", Lrc)
-        LrcSplit = list()
-        Index = -1
-        while Index >= -len(Lrc):
-            Item = Lrc[Index]
-            if(Item is None):
-                Index -= 2
+        lyric = re.split("//split//", lyric)
+        lyricSplit = list()
+        index = -1
+        while index >= -len(lyric):
+            Item = lyric[index]
+            if Item is None:
+                index -= 2
             else:
-                Index -= 1
-                LrcSplit.append(Item)
-        LrcSplit.reverse()
-        Lrc = RemoveAll(LrcSplit, "")
-        return Lrc
+                index -= 1
+                lyricSplit.insert(0, Item)
+        lyric = RemoveAll(lyricSplit, "")
+        return lyric
 
-    def FormatLrc(self, Lrc, Translation):
-        def SimpleFormat(Source):
-            Source = ReplaceAll(Source, " 　", "　")
-            Source = ReplaceAll(Source, "　 ", "　")
-            Source = ReplaceAll(Source, "（ ", "（")
-            return Source.replace("　:", " :").replace(":　", ": ").replace("：　","：")
+    def FormatLyric(self, lyric, translation):
+        def SimpleFormat(source):
+            source = ReplaceAll(source, " 　", "　")
+            source = ReplaceAll(source, "　 ", "　")
+            source = ReplaceAll(source, "（ ", "（")
+            return source.replace("　:", " :").replace(":　", ": ").replace("：　","：")
 
-        Roma = SimpleFormat(Lrc['Roma'])
-        Lrc = SimpleFormat(Lrc['Lrc'])
-        if IsOnlyEnglishOrPunctuation(Lrc):
-            Lrc = Lrc.replace("　", " ")
-        if Translation != "":
-            Translation = "译：" + Translation + "\t|\t"
-        Translation += "音：" + Roma
-        Translation = SimpleFormat(Translation)
+        roma = SimpleFormat(lyric["Roma"])
+        lyric = SimpleFormat(lyric["Lyric"])
+        if IsOnlyEnglishOrPunctuation(lyric):
+            lyric = lyric.replace("　", " ")
+        if translation != "":
+            translation = "译：" + translation + "\t|\t"
+        translation += "音：" + roma
+        translation = SimpleFormat(translation)
 
         return {
-            "Lrc": ReplaceAll(Lrc, "  ", " "),
-            "Translation": ReplaceAll(Translation, "  ", " ")
+            "Lyric": ReplaceAll(lyric, "  ", " "),
+            "Translation": ReplaceAll(translation, "  ", " ")
         }
 
-    def GetConvertedLrc(self, SplitTimeLrc, SplitTimeTranslation, IsJapanese):
-        Result = dict()
-        for TimeItem in SplitTimeLrc.keys():
-            Lrc = SplitTimeLrc[TimeItem]
-            if TimeItem in SplitTimeTranslation.keys():
-                Translation = SplitTimeTranslation[TimeItem]
+    def GetConvertedLyric(self, splitTimeLyric, splitTimeTranslation, isJapanese):
+        result = dict()
+        for timeItem in splitTimeLyric.keys():
+            lyric = splitTimeLyric[timeItem]
+            if timeItem in splitTimeTranslation.keys():
+                translation = splitTimeTranslation[timeItem]
             else:
-                Translation = ""
-            Result[TimeItem] = {
-                "Lrc": Lrc,
-                "Translation": Translation
+                translation = ""
+            result[timeItem] = {
+                "Lyric": lyric,
+                "Translation": translation
             }
-            if not IsJapanese:
-                Result[TimeItem] = {
-                    "Lrc": Lrc,
-                    "Translation": Translation
+            if not isJapanese:
+                result[timeItem] = {
+                    "Lyric": lyric,
+                    "Translation": translation
                 }
                 continue
-            Lrc = self.SplitLrc(Lrc)
-            Lrc = self.GetHiraganaLrc(Lrc)
-            Lrc = self.FormatLrc(Lrc, Translation)
+            lyric = self.SplitLyric(lyric)
+            lyric = self.GetHiraganaLyric(lyric)
+            lyric = self.FormatLyric(lyric, translation)
+            result[timeItem] = lyric
+        return result
 
-            # Testing : Unavailable
-            # Duplicate = re.compile("（.*?）（.*?）")\
-            #     .findall(Lrc["Lrc"])
-            # DuplicateList = list()
-            # for Pair in Duplicate:
-            #     DuplicateList.append(
-            #         re.compile("）.*?（）.*?（").findall(Pair[::-1])[0][::-1]
-            #     )
-            #     print(DuplicateList[-1])
-            # End Testing
-
-            Result[TimeItem] = Lrc
-        return Result
-
-    def GetLrc(self):
-        self.CurrentLrc = [
-            {'Lrc': '', 'Translation': ''},
-            {'Lrc': '', 'Translation': ''},
-            {'Lrc': '', 'Translation': ''}
+    def GetLyric(self):
+        self.CurrentLyric = [
+            EMPTY_LYRIC,
+            EMPTY_LYRIC,
+            EMPTY_LYRIC
         ]
-        Url = "http://music.163.com/api/song/lyric?" +\
+        url = "http://music.163.com/api/song/lyric?" +\
             "id=" + str(self.CurrentSong) + "&lv=1&kv=1&tv=-1"
-        JsonDate = json.loads(requests.get(Url, headers=HEADERS).text)
-        if 'nolyric' in JsonDate.keys():
-            Result = self.GetSongNameAndArtists()
+        text = requests.get(url, headers=HEADERS).text
+        jsonDate = json.loads(requests.get(url, headers=HEADERS).text)
+        if text != None and "nolyric" in jsonDate.keys():
+            result = self.GetSongNameAndArtists()
         else:
-            LyricData = str()
-            TranslationData = str()
+            lyricData, translationData, translationData = "", "", ""
             try:
-                LyricData = JsonDate['lrc']['lyric']
+                lyricData = jsonDate["lrc"]["lyric"]
             except KeyError:
                 pass
             try:
-                TranslationData = JsonDate['tlyric']['lyric']
+                translationData = jsonDate["tlyric"]["lyric"]
             except KeyError:
                 pass
 
-            SplitTimeLrc = self.GetSplitTimeLrc(LyricData)
-            SplitTimeTranslation = self.GetSplitTimeLrc(TranslationData)
+            splitTimeLyric = self.GetSplitTimeLyric(lyricData)
+            splitTimeTranslation = self.GetSplitTimeLyric(translationData)
 
-            if not SplitTimeLrc:
-                Result = self.GetSongNameAndArtists()
+            if not splitTimeLyric:
+                result = self.GetSongNameAndArtists()
             else:
-                Result = self.GetConvertedLrc(
-                    SplitTimeLrc,
-                    SplitTimeTranslation,
-                    IsContainJapanese(LyricData)
+                result = self.GetConvertedLyric(
+                    splitTimeLyric,
+                    splitTimeTranslation,
+                    IsContainJapanese(lyricData)
                 )
-        self.CurrentSongLrc = Result
+        self.CurrentSongLyric = result
+        self.SongLyricTimes = list(result.keys())
+        self.SongLyricTimes.sort()
 
-        self.SongLrcKeyTime = list(Result.keys())
-        self.SongLrcKeyTime.sort()
-
-    def SetCurrentLrc(self, TargetTime=None):
-        if TargetTime is None:
-            CurrentTime = time.time() - self.LastResumeTime + self.LastPosition
-            if self.NextLrcTime is None:
-                pass
-            else:
-                if (
-                    CurrentTime * 1000 - 500 < self.NextLrcTime
-                    or self.PlayState != PlayState.PLAYING
-                ):
-                    return
-                try:
-                    self.CurrentLrc[0] = self.CurrentLrc[1]
-                    self.CurrentLrc[1] = self.CurrentLrc[2]
-
-                    CurrentLrcIndex = self.SongLrcKeyTime.index(
-                        self.NextLrcTime)
-                    CurrentLrcTime = self.SongLrcKeyTime[CurrentLrcIndex]
-                    if (len(self.SongLrcKeyTime) - 1) <= CurrentLrcIndex:
-                        self.NextLrcTime = None
-                        self.CurrentLrc[2] = {'Lrc': '', 'Translation': ''}
-                        return
-                    self.NextLrcTime = self.SongLrcKeyTime[CurrentLrcIndex + 1]
-                    self.CurrentLrc[2] = self.CurrentSongLrc[self.NextLrcTime]
-                except Exception as e:
-                    pass
-        else:
-            KeyTime = None
-            for KeyTime in self.SongLrcKeyTime:
-                if KeyTime >= TargetTime * 1000:
-                    break
-            try:
-                TimeIndex = self.SongLrcKeyTime.index(KeyTime)
-                CurrentLrcTime = self.SongLrcKeyTime[TimeIndex - 1]
-                if len(self.SongLrcKeyTime) > 1:
-                    self.NextLrcTime = self.SongLrcKeyTime[TimeIndex]
-                    self.CurrentLrc[2] = self.CurrentSongLrc[self.NextLrcTime]
-                else:
-                    self.NextLrcTime = None
-                    self.CurrentLrc[2] = {'Lrc': '', 'Translation': ''}
-                self.CurrentLrc[1] = self.CurrentSongLrc[CurrentLrcTime]
-            except Exception as e:
-                pass
-
-
-def RemoveAll(Source, Target):
-    while Target in Source:
-        Source.remove(Target)
-    return Source
-
-
-def ReplaceAll(Source, Target, New):
-    while Target in Source:
-        Source = Source.replace(Target, New)
-    return Source
-
-
-def SplitAll(Source, Target, Retainterget=True):
-    FindResult = re.compile(Target).findall(Source)
-    NewList = list()
-    if FindResult:
-        FindResult = FindResult[0]
-        if isinstance(FindResult, tuple):
-            FindResult = FindResult[0]
-        Source = Source.split(FindResult)
-        for Key in range(len(Source)):
-            Result = SplitAll(Source[Key], Target)
-            if Result:
-                NewList += Result
-            else:
-                NewList.append(Source[Key])
-            if(Retainterget and Key != len(Source)-1):
-                NewList.append(FindResult)
-        RemoveAll(NewList, "")
-        return NewList
-    NewList.append(Source)
-    RemoveAll(NewList, "")
-    return NewList
-
-
-def GetOutPut(CurrentLrc):
-    OutPut = ""
-    for i in range(3):
-        for key in CurrentLrc[i]:
-            Lrc = CurrentLrc[i][key]
-            if Lrc is None:
-                Lrc = ""
-            OutPut += '<div class="' + key + str(i) + '">' + Lrc + '</div>'
-            OutPut += '\n'
-    return OutPut
-
-
-def LoadSongDataBase():
-    cursor = sqlite3.connect(DATABASE).cursor()
-    CursorResults = cursor.execute(
-        'SELECT tid, track '
-        'FROM web_track'
-    ).fetchall()
-    cursor.close()
-    SongData = dict()
-    for Result in CursorResults:
-        SongData[str(Result[0])] = Result[1]
-    return SongData
-
-
-def IsContainJapanese(Source):
-    SearchRanges = [
-        '[\u3040-\u3090]',  # hiragana
-        '[\u30a0-\u30ff]'   # katakana
-    ]
-    for Range in SearchRanges:
-        if RemoveAll(re.compile(Range).findall(Source), '一'):
-            return True
-    return False
-
-
-def IsContainChinese(Source):
-    return RemoveAll(re.compile('[\u4e00-\u9fa5]').findall(Source), '一')
-
-
-def IsOnlyEnglishOrPunctuation(Source):
-    SearchRanges = [
-        '[\u0000-\u007f]',
-        '[\u3000-\u303f]',
-        '[\ufb00-\ufffd]'
-    ]
-    if Source == " " or Source == "":
-        return True
-    if IsContainJapanese(Source) or IsContainChinese(Source):
-        return False
-    for Range in SearchRanges:
-        if RemoveAll(re.compile(Range).findall(Source), '一'):
-            return True
-    return False
-
-
-if __name__ == '__main__':
-    MainProgress = NeteaseMusicStatus()
-    while True:
+    def TryAutoUpdateLyric(self):
+        if self.PlayState != PlayState.PLAYING or self.NextLyricTime is None:
+            return False
+        currentTime = time.time() - self.LastResumeTime + self.LastPosition
+        if (currentTime * 1000 < self.NextLyricTime):
+            return False
         try:
-            MainProgress.Start()
-        except Exception as e:
-            MainProgress = NeteaseMusicStatus()
+            self.CurrentLyric[0] = self.CurrentLyric[1]
+            self.CurrentLyric[1] = self.CurrentLyric[2]
+
+            index = self.SongLyricTimes.index(self.NextLyricTime)
+            if len(self.SongLyricTimes) <= index + 1:
+                self.NextLyricTime = None
+                self.CurrentLyric[2] = EMPTY_LYRIC
+                return True
+            self.NextLyricTime = self.SongLyricTimes[index + 1]
+            self.CurrentLyric[2] = self.CurrentSongLyric[self.NextLyricTime]
+            return True
+        except IndexError as e:
             pass
+        except Exception as e:
+            exceptionInfo = traceback.format_exc()
+            LogError(e,"\n",exceptionInfo)
+
+    def TrySetCurrentLyric(self, targetTime):
+        keyTime = None
+        for keyTime in self.SongLyricTimes:
+            if keyTime >= targetTime * 1000:
+                break
+        try:
+            timeIndex = self.SongLyricTimes.index(keyTime)
+            currentLyricTime = self.SongLyricTimes[timeIndex - 1]
+            if len(self.SongLyricTimes) > 1:
+                self.NextLyricTime = self.SongLyricTimes[timeIndex]
+                self.CurrentLyric[2] = self.CurrentSongLyric[self.NextLyricTime]
+                if timeIndex > 1:
+                    previousLyricTime = self.SongLyricTimes[timeIndex - 2]
+                    self.CurrentLyric[0] = self.CurrentSongLyric[previousLyricTime]
+                else:
+                    self.CurrentLyric[0] = ""
+            else:
+                self.NextLyricTime = None
+                self.CurrentLyric[2] = EMPTY_LYRIC
+            self.CurrentLyric[1] = self.CurrentSongLyric[currentLyricTime]
+            return True
+        except Exception as e:
+            exceptionInfo = traceback.format_exc()
+            LogError(e,"\n",exceptionInfo)
+
+    def GetOutPut(self):
+        outPut = ""
+        for i in range(3):
+            for key in self.CurrentLyric[i]:
+                lyric = self.CurrentLyric[i][key]
+                if lyric is None:
+                    lyric = ""
+                outPut += "<div class=" + key + str(i) + ">" + lyric + "</div>"
+                outPut += "\n"
+        return outPut
+
+    @staticmethod
+    def WriteOutPut(data):
+        with open(OUTPUT, "w", encoding="utf-8") as outPutFile:
+            outPutFile.write(data)
+
+    @staticmethod
+    def LoadSongDataBase():
+        cursor = sqlite3.connect(DATABASE).cursor()
+        results = cursor.execute(DATABASE_CURSER_KEY).fetchall()
+        cursor.close()
+        songData = dict()
+        for result in results:
+            songData[str(result[0])] = result[1]
+        return songData
+
+    @staticmethod
+    def GetSplitTimeLyric(lyricList):
+        newList = dict()
+        if lyricList:
+            lyricList = re.split("\n", lyricList)
+        for lyricItem in lyricList:
+            lyricItem = re.split("\\[(.*?)]", lyricItem)
+            try:
+                lyricTime = lyricItem[1]
+                if "by" in lyricTime:
+                    continue
+                lyricItem = lyricItem[2]
+                if lyricItem == "":
+                    continue
+                lyricTime = re.split("\\:", lyricTime.replace(".", ":"))
+                minute = int(lyricTime[0])
+                second = int(lyricTime[1])
+                try:
+                    millisecond = int(lyricTime[2])
+                except IndexError:
+                    millisecond = 0
+                lyricTime = minute * 60000 + second * 1000 + millisecond
+                newList[lyricTime] = lyricItem
+            except Exception:
+                pass
+        return newList
+    # endregion Get Lyric
+# endregion class NeteaseMusicStatus:
+
+# region common methods
+# region common string methods
+
+def RemoveAll(source, target):
+    while target in source:
+        source.remove(target)
+    return source
+
+def ReplaceAll(source, target, replacement):
+    while target in source:
+        source = source.replace(target, replacement)
+    return source
+
+def SplitAll(source, target, retainterget=True):
+    findResult = re.compile(target).findall(source)
+    newList = list()
+    if findResult:
+        findResult = findResult[0]
+        if isinstance(findResult, tuple):
+            findResult = findResult[0]
+        source = source.split(findResult)
+        for key in range(len(source)):
+            result = SplitAll(source[key], target)
+            if result:
+                newList += result
+            else:
+                newList.append(source[key])
+            if(retainterget and key != len(source)-1):
+                newList.append(findResult)
+        RemoveAll(newList, "")
+        return newList
+    newList.append(source)
+    RemoveAll(newList, "")
+    return newList
+# endregion common string methods
+
+# region print color methods
+def SetCMDDisplay(type):
+    ctypes.windll.kernel32.SetConsoleTextAttribute(std_out_handle, type)
+
+def ResetCMDDisplay():
+    SetCMDDisplay(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE)
+# endregion constants
+
+# region common charater methods
+def IsContainJapanese(source):
+    searchRanges = [
+        "[\u3040-\u3090]",  # hiragana
+        "[\u30a0-\u30ff]"   # katakana
+    ]
+    for range in searchRanges:
+        if RemoveAll(re.compile(range).findall(source), "一"):
+            return True
+    return False
+
+def IsContainChinese(source):
+    return RemoveAll(re.compile("[\u4e00-\u9fa5]").findall(source), "一")
+
+def IsOnlyEnglishOrPunctuation(source):
+    searchRanges = [
+        "[\u0000-\u007f]",
+        "[\u3000-\u303f]",
+        "[\ufb00-\ufffd]"
+    ]
+    if source == " " or source == "":
+        return True
+    if IsContainJapanese(source) or IsContainChinese(source):
+        return False
+    for range in searchRanges:
+        if RemoveAll(re.compile(range).findall(source), "一"):
+            return True
+    return False
+# endregion common charater methods
+
+# region log methods
+def Log(level, infos, type, time=None):
+    if time is None:
+        time = datetime.now()
+    if not ENABLE_LOG:
+        return
+    logInfo = ""
+    for each in infos:
+        logInfo += str(each) + " "
+    logInfo = level + "\t" + str(time) + "\t" + logInfo
+    SetCMDDisplay(type)
+    print(logInfo)
+    ResetCMDDisplay()
+    return logInfo + "\n"
+
+def LogElog(*info):
+    return Log("[ELOG]", info, FOREGROUND_GREY)
+
+def LogMain(*info):
+    return Log("[MAIN]", info, FOREGROUND_BLUE)
+
+def LogInfo(time, *info):
+    return Log("[LOG]", info, FOREGROUND_GREEN, time)
+
+def LogError(*info):
+    return Log("[ERROR]", info, FOREGROUND_RED)
+# endregion main methods
+# endregion common methods
+
+# region main methods
+if __name__ == "__main__":
+    with open(PY_LOG_PATH, "a", encoding="utf-8") as logFile:
+        logFile.write(LogMain("Script Start"))
+    mainProgress = NeteaseMusicStatus()
+    # while True:
+    mainProgress.Start()
+
+# endregion main methods

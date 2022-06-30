@@ -95,7 +95,7 @@ video {
 	transition: .6s;
 }
 
-.Lrc0 {
+.Lyric0 {
     font-size:25px;
     opacity: 0.3;
 }
@@ -105,7 +105,7 @@ video {
     opacity: 0.3;
 }
 
-.Lrc1 {
+.Lyric1 {
     font-size:35px;
     opacity:0.4;
 }
@@ -114,7 +114,7 @@ video {
     font-size:23px;
     opacity:0.4;
 }
-.Lrc2 {
+.Lyric2 {
     font-size:25px;
     opacity: 0.3;
 }

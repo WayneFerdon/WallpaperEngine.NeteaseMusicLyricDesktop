@@ -1,6 +1,7 @@
 var g_Width = window.innerWidth
 var g_Height = window.innerHeight
 var g_Wallpaper = $('body').particles({}).audiovisualizer({})
+var g_LastUpdate = new Date();
 
 var CTX = Can.getContext("2d");
 var CTXLine = CanLine.getContext("2d");
@@ -29,8 +30,7 @@ window.wallpaperPropertyListener = {
 	setPaused: function (IsPaused) {
 		if (IsPaused) {
 			g_BackgroundSettingsObject.Video.pause();
-		}
-		else {
+		} else {
 			if (g_BackgroundSettingsObject.Video.paused) {
 				g_BackgroundSettingsObject.Video.play();
 			}

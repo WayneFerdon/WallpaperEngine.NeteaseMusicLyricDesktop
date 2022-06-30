@@ -1,7 +1,19 @@
+/*
+ * @Author: wayneferdon wayneferdon@hotmail.com
+ * @Date: 2021-08-17 01:45:20
+ * @LastEditors: wayneferdon wayneferdon@hotmail.com
+ * @LastEditTime: 2022-06-26 07:32:21
+ * @FilePath: \myprojects\bg\js\BackgroundSetting.js
+ * ----------------------------------------------------------------
+ * Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
+ * Licensed to the .NET Foundation under one or more agreements.
+ * The .NET Foundation licenses this file to you under the MIT license.
+ * See the LICENSE file in the project root for more information.
+ */
 var g_SlideList = [];
 var g_BackgroundSettingsObject = {};
 g_BackgroundSettingsObject.Video = document.querySelector(".VideoBackground");
-g_BackgroundSettingsObject.BackgroundRoute = "url('Content/imgs/1.png')";
+g_BackgroundSettingsObject.BackgroundRoute = "url('Content/imgs/default.png')";
 g_BackgroundSettingsObject.VideoRoute = "video/test.webm";
 g_BackgroundSettingsObject.CusvideoRoute = "";
 g_BackgroundSettingsObject.Random = false;
@@ -15,10 +27,6 @@ var BackgroundSettings = function (Settings) {
 	if (Settings.WallpaperMode) {
 		g_BackgroundSettingsObject.WallpaperMode = Settings.WallpaperMode.value;
 		ChangeBackground();
-	}
-	if (Settings.DefaultWallpaper) {
-		g_BackgroundSettingsObject.BackgroundRoute = "url('Content/imgs/" + Settings.DefaultWallpaper.value + ".png')";
-		ShowBackground();
 	}
 	if (Settings.CustomDirectory) {
 		ChangeBackground();
@@ -209,7 +217,6 @@ function ChangeVideoModel() {
 	}
 	g_BackgroundSettingsObject.Video.play();
 }
-
 
 function updateFileList(currentFiles) {
 	for (let i = 0; i < currentFiles.length; ++i) {

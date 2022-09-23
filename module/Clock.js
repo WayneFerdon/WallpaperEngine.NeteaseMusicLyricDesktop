@@ -13,7 +13,6 @@ NewDate.setDate(NewDate.getDate());
 setTimeout(SecondPassed, 2000);
 AutoTime();
 
-
 function ClockInit() {
 	Clock.style.width = g_Width + 'px';
 	Clock.style.lineHeight = g_Height + 'px';

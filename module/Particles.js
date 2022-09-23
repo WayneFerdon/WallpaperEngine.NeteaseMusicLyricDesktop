@@ -1,3 +1,15 @@
+/*
+ * @Author: wayneferdon wayneferdon@hotmail.com
+ * @Date: 2021-08-17 01:45:20
+ * @LastEditors: wayneferdon wayneferdon@hotmail.com
+ * @LastEditTime: 2022-06-26 07:54:37
+ * @FilePath: \myprojects\bg\module\Particles.js
+ * ----------------------------------------------------------------
+ * Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
+ * Licensed to the .NET Foundation under one or more agreements.
+ * The .NET Foundation licenses this file to you under the MIT license.
+ * See the LICENSE file in the project root for more information.
+ */
 (function (global, factory) {
     'use strict';
     if (typeof define === 'function' && define.amd) {
@@ -145,9 +157,7 @@
         if (particles.x - particles.radius > canvasWidth) {
             particles.x = new_pos.x_left;
             particles.y = Math.random() * canvasHeight;
-        }
-
-        else if (particles.x + particles.radius < 0) {
+        } else if (particles.x + particles.radius < 0) {
             particles.x = new_pos.x_right;
             particles.y = Math.random() * canvasHeight;
         }
@@ -155,9 +165,7 @@
         if (particles.y - particles.radius > canvasHeight) {
             particles.y = new_pos.y_top;
             particles.x = Math.random() * canvasWidth;
-        }
-
-        else if (particles.y + particles.radius < 0) {
+        } else if (particles.y + particles.radius < 0) {
             particles.y = new_pos.y_bottom;
             particles.x = Math.random() * canvasWidth;
         }
@@ -166,18 +174,14 @@
 
             if (particles.x + particles.radius > canvasWidth) {
                 particles.vx = -particles.vx;
-            }
-
-            else if (particles.x - particles.radius < 0) {
+            } else if (particles.x - particles.radius < 0) {
                 particles.vx = -particles.vx;
             }
 
 
             if (particles.y + particles.radius > canvasHeight) {
                 particles.vy = -particles.vy;
-            }
-
-            else if (particles.y - particles.radius < 0) {
+            } else if (particles.y - particles.radius < 0) {
                 particles.vy = -particles.vy;
             }
         }
@@ -373,6 +377,14 @@
 
     function runParticlesTimer(that) {
         timer = requestAnimationFrame(function animal() {
+            var date = new Date();
+            // 1/165 ~ 0.006
+            if (date - g_LastUpdate < 6) {
+                timer = requestAnimationFrame(animal);
+                return;
+            }
+            g_LastUpdate = date;
+
             updateParticlesArray(that.isMove, that.g_IsMusicRandom, that.isBounce, that.moveOutMode, that.musicStrengh);
             context.clearRect(0, 0, canvasWidth, canvasHeight);
             for (var i = 0; i < particlesArray.length; i++) {
@@ -699,8 +711,7 @@
             }
             if (!data) {
                 $this.data('particles', (data = new Particles(this, options)));
-            }
-            else if (typeof option === 'string') {
+            } else if (typeof option === 'string') {
                 Particles.prototype[option].apply(data, args);
             }
         });

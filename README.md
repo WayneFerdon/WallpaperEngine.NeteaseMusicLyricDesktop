@@ -1,34 +1,60 @@
+<!--
+ * @Author: wayneferdon wayneferdon@hotmail.com
+ * @Date: 2021-08-17 01:45:17
+ * @LastEditors: wayneferdon wayneferdon@hotmail.com
+ * @LastEditTime: 2022-08-25 13:49:28
+ * @FilePath: \undefinede:\SteamLibrary\steamapps\common\wallpaper_engine\projects\myprojects\bg\README.md
+ * ----------------------------------------------------------------
+ * Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
+ * Licensed to the .NET Foundation under one or more agreements.
+ * The .NET Foundation licenses this file to you under the MIT license.
+ * See the LICENSE file in the project root for more information.
+-->
 # wallpaperEngineDesktopWithNeteaseLrcDisplay
----
-!!!! Version higher than 2.9.2.199190 (not included) is current now **not supported**
----
-Since the cloudmusic.log file is now changed to the new cloudmusic.elog, as well as using a new and unknow encoding.
-
-To download history Versions, use:
->https://<span>d1.music.126.net/dmusic/cloudmusicsetup.[Version].[Build].exe
-
-For Example, the latest supported version:
-  >https://d1.music.126.net/dmusic/cloudmusicsetup2.9.2.199190.exe
-
-Anyone knows what encoding the new log version is using may comment in [Issue #1](https://github.com/wayneferdon/WallpaperEngine.NeteaseMusicLyricDesktop/issues/1)
 
 ---
+
 ## Introduction
 
 Python: monitor cloudmusic.log and analyze it to get current lrc and plaing state, then generate html block
- 
+
 JavaScript: Insert the generated html block into the wallpaper
 
 ## Requirements
+
 1. [Python 3](https://www.python.org/)
 2. [pykakasi for Python](https://github.com/miurahr/pykakasi)
-  >pip install pykakasi
-3. other requirement can see imports in [./module/NeteaseMusicStatus.pyw](https://github.com/wayneferdon/WallpaperEngine.NeteaseMusicLyricDesktop/blob/master/module/NeteaseMusicStatus.pyw)
-  ([Line 3](https://github.com/wayneferdon/WallpaperEngine.NeteaseMusicLyricDesktop/blob/master/module/NeteaseMusicStatus.pyw#L3) to [Line 10](https://github.com/wayneferdon/WallpaperEngine.NeteaseMusicLyricDesktop/blob/master/module/NeteaseMusicStatus.pyw#L10))
+
+    >pip install pykakasi
+
+3. other requirement can see imports in [./module/NeteaseMusicStatus/Scripts/NeteaseMusicStatus.pyw](https://github.com/wayneferdon/WallpaperEngine.NeteaseMusicLyricDesktop/blob/master/module/NeteaseMusicStatus/Scripts/NeteaseMusicStatus.pyw)
+  ([Line 3](https://github.com/wayneferdon/WallpaperEngine.NeteaseMusicLyricDesktop/blob/master/module/NeteaseMusicStatus/Scripts/NeteaseMusicStatus.pyw#L3) to [Line 10](https://github.com/wayneferdon/WallpaperEngine.NeteaseMusicLyricDesktop/blob/master/module/NeteaseMusicStatus/Scripts/NeteaseMusicStatus.pyw#L10))
 
 ## Usage
-1. Run NeteaseMusicStatus.pyw (defualt by pythonw.exe)
-2. Selet this wallpaper in wallpaper engine
+
+1. Run StartNeteaseMusicStatus.bat
+2. Selet the wallpaper in Wallpaper Engine
+
+## Build
+
+1. install Requirements:
+
+    [pykakasi for Python](https://github.com/miurahr/pykakasi)
+    >pip install pykakasi
+
+    [pyinstaller for Python](https://github.com/pyinstaller/pyinstaller)
+    >pip install pyinstaller
+2. make sure hook file for pykakasi exist:
+
+    > Python3.x.x/Lib/site-packages/_pyinstaller_hooks_contrib/hooks/hook-pykakasi.py
+
+    if not exist, copy it from
+    > ./module/NeteaseMusicStatus/Scripts/hook-pykakasi.py
+3. Run ./module/NeteaseMusicStatus/Complie.bat
 
 ## Notes
+
+Since the cloudmusic.log file is now changed to the new cloudmusic.elog, as well as using a new and unknow encoding. Currently some relation has been tried and works fine, yet if anyone knows what encoding the new log version is using may comment in [Issue #1](https://github.com/wayneferdon/WallpaperEngine.NeteaseMusicLyricDesktop/issues/1)
+
+---
 Inspire by [another similar method on OS X by Jamesits](https://github.com/Jamesits/Netease-music-status)

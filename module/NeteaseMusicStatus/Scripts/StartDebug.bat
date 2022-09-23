@@ -1,0 +1,1 @@
+python NeteaseMusicStatus.pyw

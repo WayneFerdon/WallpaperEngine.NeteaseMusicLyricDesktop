@@ -2,8 +2,8 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2021-09-10 17:43:13
 # LastEditors: wayneferdon wayneferdon@hotmail.com
-# LastEditTime: 2022-08-25 13:17:07
-# FilePath: \undefinede:\SteamLibrary\steamapps\common\wallpaper_engine\projects\myprojects\bg\module\NeteaseMusicStatus\Scripts\NeteaseMusicStatus.py
+# LastEditTime: 2022-11-06 22:11:21
+# FilePath: \undefinede:\SteamLibrary\steamapps\common\wallpaper_engine\projects\myprojects\NeteaseMusic\module\NeteaseMusicStatus\Scripts\NeteaseMusicStatus.pyw
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
 # Licensed to the .NET Foundation under one or more agreements.
@@ -495,7 +495,7 @@ class NeteaseMusicStatus:
             try:
                 jsonDate = json.loads(
                     self.LocalMusicInfo[str(self.CurrentSong)])
-                songName = jsonDate["album"]["name"]
+                songName = jsonDate["name"]
                 artists = jsonDate["artists"]
                 songArtist = "by: "
                 for artist in artists:

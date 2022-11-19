@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2021-09-10 17:43:13
 # LastEditors: wayneferdon wayneferdon@hotmail.com
-# LastEditTime: 2022-11-06 22:11:21
+# LastEditTime: 2022-11-19 16:00:01
 # FilePath: \undefinede:\SteamLibrary\steamapps\common\wallpaper_engine\projects\myprojects\NeteaseMusic\module\NeteaseMusicStatus\Scripts\NeteaseMusicStatus.pyw
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -887,27 +887,28 @@ def Log(level, infos, type, time=None):
     logInfo = level + "\t" + str(time) + "\t" + logInfo
     SetCMDDisplay(type)
     print(logInfo)
+    with open(PY_LOG_PATH, "a", encoding="utf-8") as logFile:
+        logFile.write(logInfo + "\n")
     ResetCMDDisplay()
-    return logInfo + "\n"
+    return logInfo
 
 def LogElog(*info):
-    return Log("[ELOG]", info, FOREGROUND_GREY)
+    Log("[ELOG]", info, FOREGROUND_GREY)
 
 def LogMain(*info):
-    return Log("[MAIN]", info, FOREGROUND_BLUE)
+    Log("[MAIN]", info, FOREGROUND_BLUE)
 
 def LogInfo(time, *info):
-    return Log("[LOG]", info, FOREGROUND_GREEN, time)
+    Log("[LOG]", info, FOREGROUND_GREEN, time)
 
 def LogError(*info):
-    return Log("[ERROR]", info, FOREGROUND_RED)
+    Log("[ERROR]", info, FOREGROUND_RED)
 # endregion main methods
 # endregion common methods
 
 # region main methods
 if __name__ == "__main__":
-    with open(PY_LOG_PATH, "a", encoding="utf-8") as logFile:
-        logFile.write(LogMain("Script Start"))
+    LogMain("Script Start")
     mainProgress = NeteaseMusicStatus()
     # while True:
     mainProgress.Start()

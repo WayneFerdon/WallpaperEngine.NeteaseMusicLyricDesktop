@@ -1,1 +1,2 @@
 python NeteaseMusicStatus.pyw
+pause

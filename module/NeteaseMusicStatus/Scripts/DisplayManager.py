@@ -37,6 +37,7 @@ class DisplayManager(LoopObject):
         self.__InitializeHanzi2KanjiLib__()
         Debug.LogLow("Initialization End")
     
+    # region main methods
     def OnStart(self):
         super().OnStart()
         self.WriteOutPut("")

@@ -1,8 +1,8 @@
 # ----------------------------------------------------------------
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-08-26 14:44:48
-# LastEditors: wayneferdon wayneferdon@hotmail.com
-# LastEditTime: 2022-11-22 03:21:18
+# LastEditors: WayneFerdon wayneferdon@hotmail.com
+# LastEditTime: 2023-04-12 05:32:09
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\NeteaseMusicStatus.pyw
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -13,9 +13,10 @@
 
 # region import
 from Debug import Debug
-from MainLoop import *
-from DisplayManager import *
-from ELogMonitor import *
+from MainLoop import MainLoop
+from LyricManager import LyricManager
+from ELogMonitor import ELogMonitor
+from DisplayManager import DisplayManager
 # endregion import
 
 def Main():
@@ -23,8 +24,11 @@ def Main():
     MainLoop()
 
     # Init and listen on MainLoop Events by given order
+    Debug.LogLow("Initialization Start")
+    LyricManager()
     ELogMonitor()
     DisplayManager()
+    Debug.LogLow("Initialization End")
 
     MainLoop.Start()
 

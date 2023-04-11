@@ -1,8 +1,8 @@
 # ----------------------------------------------------------------
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 00:50:50
-# LastEditors: wayneferdon wayneferdon@hotmail.com
-# LastEditTime: 2022-11-22 00:50:52
+# LastEditors: WayneFerdon wayneferdon@hotmail.com
+# LastEditTime: 2023-04-12 01:55:09
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\Constants.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -18,23 +18,39 @@ from datetime import datetime
 # region constants
 # region paths and default values
 APPDATA = os.getenv("LOCALAPPDATA")
-LOGPATH = os.path.expanduser(APPDATA + "/Netease/CloudMusic/cloudmusic.elog")
-DATABASE = os.path.expanduser(APPDATA + "/Netease/CloudMusic/Library/webdb.dat")
-DATABASE_CURSER_KEY = "SELECT tid, track FROM web_track"
-OUTPUT = "../OutPut.html"
+CLOUD_MUSIC = os.path.expanduser(APPDATA + "/Netease/CloudMusic/")
+LOGPATH = os.path.join(CLOUD_MUSIC, "cloudmusic.elog")
+
+WEB_DATABASE = os.path.join(CLOUD_MUSIC, "Library/webdb.dat")
+WEB_DATABASE_CURSER_KEY = "SELECT tid, track FROM web_track"
+
+LIB_DATABASE = os.path.join(CLOUD_MUSIC, "Library/library.dat")
+LIB_DATABASE_CURSER_KEY = "SELECT title, track FROM track"
+
+
+WEB_DATA_DIR = os.path.join(CLOUD_MUSIC, "webdata/lyric/")
+TEMP_DIR = os.path.join(CLOUD_MUSIC, "Temp/")
+TEMP_DATABASE = os.path.join(TEMP_DIR, "index.dat")
+TEMP_DATABASE_CURSER_KEY = "SELECT path, type FROM cache"
+
+CACHE_DIR = '../cache/'
+OUTPUT = "../Output.html"
 KANJI_LIB = "Hanzi2Kanji.json"
-HEADERS = {
-    "user-agent":
-    "Mozilla/5.0 (Windows NT 10.0; Win64;\x64)\
-            AppleWebKit/537.36 (KHTML, like Gecko)\
-            Chrome/80.0.3987.87 Safari/537.36"
-}
 ZERO_DATETIME = datetime.strptime("0001-01-01T00:00:00.000000+00:00", "%Y-%m-%dT%H:%M:%S.%f%z")
 
 EMPTY_LYRIC = {"Lyric": "", "Translation": ""}
 NULL_LYRIC = {0.0 :{"Lyric": "无歌词", "Translation": ""}}
 RELOAD_ATTEMPT = 10
 INITIAL_SELF_LAST_LOG = "INITIAL_SELF_LAST_LOG"
+
+HARD_FIXS = {
+    '君（くん）':{
+        'romaMatch':'ki mi',
+        'lyricReplace': '君（きみ）',
+        'roma': 'kun',
+        'romaReplace':'kimi',
+    }
+}
 # endregion paths and default values
 # endregion constants
 

@@ -1,3 +1,16 @@
+# ----------------------------------------------------------------
+# Author: WayneFerdon wayneferdon@hotmail.com
+# Date: 2023-04-11 19:55:43
+# LastEditors: WayneFerdon wayneferdon@hotmail.com
+# LastEditTime: 2023-04-12 05:28:26
+# FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\ELogEncoding.py
+# ----------------------------------------------------------------
+# Copyright (c) 2023 by Wayne Ferdon Studio. All rights reserved.
+# Licensed to the .NET Foundation under one or more agreements.
+# The .NET Foundation licenses this file to you under the MIT license.
+# See the LICENSE file in the project root for more information.
+# ----------------------------------------------------------------
+
 ENCODING = {
     11: "3",
     12: "C",

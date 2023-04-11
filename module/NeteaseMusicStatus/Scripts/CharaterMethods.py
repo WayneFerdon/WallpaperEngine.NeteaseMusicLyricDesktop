@@ -1,8 +1,8 @@
 # ----------------------------------------------------------------
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 00:48:47
-# LastEditors: wayneferdon wayneferdon@hotmail.com
-# LastEditTime: 2022-11-22 00:48:47
+# LastEditors: WayneFerdon wayneferdon@hotmail.com
+# LastEditTime: 2023-04-11 11:13:26
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\CharaterMethods.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -13,6 +13,7 @@
 
 import re
 
+# region common string methods
 def RemoveAll(source:list[str]|str, target:str) -> list[str]|str:
     while target in source:
         source.remove(target)
@@ -76,3 +77,4 @@ def IsOnlyEnglishOrPunctuation(source):
         if RemoveAll(re.compile(range).findall(source), "一"):
             return True
     return False
+# endregion common charater methods

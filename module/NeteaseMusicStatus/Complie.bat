@@ -1,4 +1,4 @@
-@REM delete previous build
+@REM kill task in case to delete previous build
 taskkill /IM NeteaseMusicStatus.exe /F
 
 @REM build and copy dependents

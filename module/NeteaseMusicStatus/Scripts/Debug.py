@@ -1,8 +1,8 @@
 # ----------------------------------------------------------------
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 00:43:33
-# LastEditors: wayneferdon wayneferdon@hotmail.com
-# LastEditTime: 2022-11-22 03:03:17
+# LastEditors: WayneFerdon wayneferdon@hotmail.com
+# LastEditTime: 2023-04-11 20:20:23
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\Debug.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.

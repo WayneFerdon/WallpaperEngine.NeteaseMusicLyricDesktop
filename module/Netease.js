@@ -28,7 +28,7 @@ function LyricInit() {
 }
 
 function LyricUpdate() {
-    $('#Netease').load('module/NeteaseMusicStatus/OutPut.html');
+    $('#Netease').load('module/NeteaseMusicStatus/Output.html');
 }
 
 LyricInit();

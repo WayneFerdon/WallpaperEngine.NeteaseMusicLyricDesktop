@@ -1,8 +1,8 @@
 # ----------------------------------------------------------------
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 02:30:29
-# LastEditors: wayneferdon wayneferdon@hotmail.com
-# LastEditTime: 2022-11-22 03:16:56
+# LastEditors: WayneFerdon wayneferdon@hotmail.com
+# LastEditTime: 2023-04-12 07:06:29
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\ELogMonitor.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -11,8 +11,17 @@
 # See the LICENSE file in the project root for more information.
 # ----------------------------------------------------------------
 
-from ElogEncoding import *
-from DisplayManager import *
+import re
+import time
+import traceback
+import json
+from Constants import *
+from ELogEncoding import ENCODING
+from DisplayManager import DisplayManager
+from Debug import Debug
+from Singleton import Singleton
+from MainLoop import LoopObject
+from LyricManager import LyricManager
 
 class NeteaseLogType():
     def __init__(self, state:LOG_VALID_INFO, method:classmethod, key:str) -> None:
@@ -20,18 +29,8 @@ class NeteaseLogType():
         self.Method = method
         self.Key = key
 
-class ELogMonitor(LoopObject):
-    # 静态变量
-    Instance=None
-    _flag=False
-    def __new__(cls, *args, **kwargs):
-        if cls.Instance is None:
-            cls.Instance=super().__new__(cls)
-        return cls.Instance
+class ELogMonitor(Singleton, LoopObject):
     def __init__(self):
-        if ELogMonitor._flag:
-            return
-        ELogMonitor._flag=True
         super().__init__()
         self.ModifiedTime = 0
         self.LastestLog = INITIAL_SELF_LAST_LOG
@@ -53,15 +52,19 @@ class ELogMonitor(LoopObject):
             LOG_VALID_INFO.PAUSE, self.OnPause, "player._$pausedo"
         ))
 
+    def InitializeSeekPosition(self):
+        self.LogFile.seek(0, 0)
+
     def OnStart(self):
         super().OnStart()
+        Debug.LogLow('ELogMonitor.OnStart')
         self.IsInitializing = True
         self.LogFile = open(LOGPATH, "rb")
         self.FileSize = os.path.getsize(LOGPATH)
-        self.LatestOffset = self.FileSize
-        self.LogFile.seek(max(self.LatestOffset-200000, 0), 0)
+        self.InitializeSeekPosition()
         self.Analysis()
         self.IsInitializing = False
+        Debug.LogLow('ELogMonitor.OnStartEnd')
 
     def OnUpdate(self):
         super().OnUpdate()
@@ -105,10 +108,6 @@ class ELogMonitor(LoopObject):
             self.FileSize = os.path.getsize(LOGPATH)
             if self.FileSize == 0:
                 return None
-            # to use seek from end, must use mode "rb"
-            if self.LatestOffset <= self.FileSize:
-                lines = self.LogFile.readlines()
-                return lines
             self.InitializeSeekPosition()
             return self.LogFile.readlines()
         except FileNotFoundError:
@@ -132,7 +131,7 @@ class ELogMonitor(LoopObject):
                 return
             except Exception:
                 if i == RELOAD_ATTEMPT - 1:
-                    raise Exception("Open %s failed after try 10 times" % LOGPATH)
+                    raise Exception(f"Open {LOGPATH} failed after try 10 times")
                 time.sleep(1)
 
     def AnalysisLog(self, content:str):
@@ -148,15 +147,16 @@ class ELogMonitor(LoopObject):
             Debug.LogError(e, "\n", traceback.format_exc())
             return
         if validInfo in [LOG_VALID_INFO.SETPOS, LOG_VALID_INFO.RESUME]:
-            DisplayManager.Instance.OutPutCurrentLyric(DisplayManager.Instance.LastPosition)
+            DisplayManager.Instance.OutputCurrentLyric(DisplayManager.Instance.LastPosition)
         if validInfo == LOG_VALID_INFO.APPEXIT:
-            DisplayManager.Instance.WriteOutPut("")
+            DisplayManager.WriteOutput("")
 
     def CheckAppExit(self, content:str) -> LOG_VALID_INFO:
         if "Appexit." not in content:
             return LOG_VALID_INFO.NONE
+        
         if DisplayManager.Instance.PlayState == PLAY_STATE.PLAYING:
-            DisplayManager.Instance.LastPosition += time.time() - DisplayManager.Instance.LastResumeTime
+            DisplayManager.Instance.LastPosition += time.time() - DisplayManager.Instance.LastResume
         DisplayManager.Instance.PlayState = PLAY_STATE.EXITED
 
         if self.LastUpdate == ZERO_DATETIME:
@@ -184,7 +184,6 @@ class ELogMonitor(LoopObject):
         result = re.split("\\[(.*?)]", content[0])
         if len(result) < 6:
             return LOG_VALID_INFO.NONE
-
         logTimeStr = result[5]
         logTime = datetime.strptime(logTimeStr, "%Y-%m-%dT%H:%M:%S.%f%z")
         if logTime < self.LastUpdate:
@@ -198,35 +197,36 @@ class ELogMonitor(LoopObject):
         return LOG_VALID_INFO.NONE
 
     def OnPlay(self, logTime:datetime, logInfo:str):
-        DisplayManager.Instance.CurrentSong = str(re.split("_", re.split("\"", logInfo)[1])[0])
+        LyricManager.Song = str(re.split("_", re.split("\"", logInfo)[1])[0])
         if not self.IsInitializing:
-            DisplayManager.Instance.GetLyric()
+            LyricManager.PrepareLyric()
+            LyricManager.LastSyncAttemp = None
         if DisplayManager.Instance.PlayState != PLAY_STATE.EXITED:
             DisplayManager.Instance.LastPosition = 0.0
         DisplayManager.Instance.NextLyricTime = 0.0
         # require load and resume next
         DisplayManager.Instance.PlayState = PLAY_STATE.STOPPED
-        Debug.Log(logTime, "Play song:", DisplayManager.Instance.CurrentSong)
+        Debug.Log(logTime, "Play song:", LyricManager.Song)
 
     def OnLoadDuration(self, logTime:datetime, logInfo:str):
-        DisplayManager.Instance.CurrentSongLength = float(json.loads(
+        LyricManager.SongLength = float(json.loads(
             re.split("\t", logInfo)[0])["duration"])
-        Debug.Log(logTime, "Load Duration:", DisplayManager.Instance.CurrentSongLength)
+        Debug.Log(logTime, "Load Duration:", LyricManager.SongLength)
 
     def OnSetPosition(self, logTime:datetime, logInfo:str):
-        DisplayManager.Instance.LastPosition = float(json.loads(logInfo.split("\t")[0])["ratio"]) * DisplayManager.Instance.CurrentSongLength
+        DisplayManager.Instance.LastPosition = float(json.loads(logInfo.split("\t")[0])["ratio"]) * LyricManager.SongLength
         if DisplayManager.Instance.PlayState == PLAY_STATE.PLAYING:
-            DisplayManager.Instance.LastResumeTime = logTime.timestamp()
+            DisplayManager.Instance.LastResume = logTime.timestamp()
         Debug.Log(logTime, "Set Position:", DisplayManager.Instance.LastPosition)
 
-    def OnResume(self, logTime:datetime, logInfo:str):
+    def OnResume(self, logTime:datetime, _):
         DisplayManager.Instance.PlayState = PLAY_STATE.PLAYING
-        DisplayManager.Instance.LastResumeTime = logTime.timestamp()
+        DisplayManager.Instance.LastResume = logTime.timestamp()
         Debug.Log(logTime, "Resume")
 
-    def OnPause(self, logTime:datetime, logInfo:str):
+    def OnPause(self, logTime:datetime, _):
         if DisplayManager.Instance.PlayState == PLAY_STATE.PLAYING:
-            DisplayManager.Instance.LastPosition += logTime.timestamp() - DisplayManager.Instance.LastResumeTime
+            DisplayManager.Instance.LastPosition += logTime.timestamp() - DisplayManager.Instance.LastResume
             self.LastPauseTime = logTime.timestamp()
         DisplayManager.Instance.PlayState = PLAY_STATE.STOPPED
 

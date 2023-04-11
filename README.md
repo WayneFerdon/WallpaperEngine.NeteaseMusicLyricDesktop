@@ -23,12 +23,6 @@ JavaScript: Insert the generated html block into the wallpaper
 ## Requirements
 
 1. [Python 3](https://www.python.org/)
-2. [pykakasi for Python](https://github.com/miurahr/pykakasi)
-
-    >pip install pykakasi
-
-3. other requirement can see imports in [./module/NeteaseMusicStatus/Scripts/NeteaseMusicStatus.pyw](https://github.com/wayneferdon/WallpaperEngine.NeteaseMusicLyricDesktop/blob/master/module/NeteaseMusicStatus/Scripts/NeteaseMusicStatus.pyw)
-  ([Line 3](https://github.com/wayneferdon/WallpaperEngine.NeteaseMusicLyricDesktop/blob/master/module/NeteaseMusicStatus/Scripts/NeteaseMusicStatus.pyw#L3) to [Line 10](https://github.com/wayneferdon/WallpaperEngine.NeteaseMusicLyricDesktop/blob/master/module/NeteaseMusicStatus/Scripts/NeteaseMusicStatus.pyw#L10))
 
 ## Usage
 
@@ -37,13 +31,16 @@ JavaScript: Insert the generated html block into the wallpaper
 
 ## Build
 
-1. install Requirements:
+1. Install [requirements](https://github.com/wayneferdon/WallpaperEngine.NeteaseMusicLyricDesktop/blob/master/module/NeteaseMusicStatus/Scripts/requirements):
+
+    [Python 3](https://www.python.org/)
 
     [pykakasi for Python](https://github.com/miurahr/pykakasi)
-    >pip install pykakasi
 
     [pyinstaller for Python](https://github.com/pyinstaller/pyinstaller)
-    >pip install pyinstaller
+
+    [pyncm](https://github.com/mos9527/pyncm)
+
 2. make sure hook file for pykakasi exist:
 
     > Python3.x.x/Lib/site-packages/_pyinstaller_hooks_contrib/hooks/hook-pykakasi.py

@@ -2,7 +2,7 @@
 # Author: WayneFerdon wayneferdon@hotmail.com
 # Date: 2023-04-11 19:55:43
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-04-12 05:36:38
+# LastEditTime: 2023-04-12 07:50:58
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\LyricManager.py
 # ----------------------------------------------------------------
 # Copyright (c) 2023 by Wayne Ferdon Studio. All rights reserved.
@@ -216,7 +216,7 @@ class LyricManager(Singleton, LoopObject):
             orig += " "
             return orig, orig, isJap
         if hira == orig:
-            return "", "", isJap
+            return orig, roma, isJap
         
         duplicated = False
         for i in range(min(len(hira), len(orig))):
@@ -272,6 +272,8 @@ class LyricManager(Singleton, LoopObject):
         min, closet = maxDelta, None
         for t in timeline.keys():
             delta = abs(time-t)
+            if delta == 0:
+                return t
             if delta > min:
                 continue
             closet = t
@@ -303,7 +305,6 @@ class LyricManager(Singleton, LoopObject):
             for each in cls.Kakasi.convert(split):
                 for text in SplitAll(each["orig"], "(（.*?）){1}"):
                     splited += cls.Kakasi.convert(text)
-
         lrcSplits, romaSplits, isJap = list[str](), list[str](), True
         for split in splited:
             orig, hira, roma = split["orig"], split["hira"], split["hepburn"]
@@ -359,10 +360,8 @@ class LyricManager(Singleton, LoopObject):
                 trans = transTimeline[time]
             # roma lyrics
             maxDelta = 1000
-            if time not in romaTimeline.keys():
-                closet = cls.GetClosetInTimeline(time, maxDelta, romaTimeline)
-                time = closet if closet else time
-            roma = romaTimeline[time]
+            romaTime = cls.GetClosetInTimeline(time, maxDelta, romaTimeline)
+            roma = romaTimeline[romaTime] if romaTime else None
             # hiragana for Japanese
             if isJap:
                 lyric, roma = cls.PreformatJapLyric(lyric, roma)

@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 00:50:50
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-04-12 01:55:09
+# LastEditTime: 2023-04-12 08:26:55
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\Constants.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -65,7 +65,7 @@ class LOG_VALID_INFO(Enum):
     APPEXIT = 1
     PLAY = 2
     LOAD = 3
-    SETPOS = 4
+    SEEKPOS = 4
     RESUME = 5
     PAUSE = 6
 # endregion enums

@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 00:50:50
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-04-12 08:26:55
+# LastEditTime: 2023-04-13 03:49:55
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\Constants.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -36,7 +36,6 @@ TEMP_DATABASE_CURSER_KEY = "SELECT path, type FROM cache"
 CACHE_DIR = '../cache/'
 OUTPUT = "../Output.html"
 KANJI_LIB = "Hanzi2Kanji.json"
-ZERO_DATETIME = datetime.strptime("0001-01-01T00:00:00.000000+00:00", "%Y-%m-%dT%H:%M:%S.%f%z")
 
 EMPTY_LYRIC = {"Lyric": "", "Translation": ""}
 NULL_LYRIC = {0.0 :{"Lyric": "无歌词", "Translation": ""}}
@@ -60,12 +59,12 @@ class PLAY_STATE(Enum):
     PLAYING = 1
     EXITED = 2
 
-class LOG_VALID_INFO(Enum):
-    NONE = 0
-    APPEXIT = 1
-    PLAY = 2
-    LOAD = 3
-    SEEKPOS = 4
-    RESUME = 5
-    PAUSE = 6
+# class LOG_VALID_INFO(Enum):
+#     NONE = 0
+#     APPEXIT = 1
+#     PLAY = 2
+#     LOAD = 3
+#     SEEKPOS = 4
+#     RESUME = 5
+#     PAUSE = 6
 # endregion enums

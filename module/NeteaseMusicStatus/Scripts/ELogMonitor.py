@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 02:30:29
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-04-12 08:37:02
+# LastEditTime: 2023-04-13 08:06:42
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\ELogMonitor.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -12,56 +12,106 @@
 # ----------------------------------------------------------------
 
 import re
-import time
+import time as tm
 import traceback
 import json
 from Constants import *
-from ELogEncoding import ENCODING
+from ELogEncoding import *
 from DisplayManager import DisplayManager
 from Debug import Debug
 from Singleton import Singleton
 from MainLoop import LoopObject
 from LyricManager import LyricManager
 
-class NeteaseLogType():
-    def __init__(self, state:LOG_VALID_INFO, method:classmethod, key:str) -> None:
-        self.State = state
-        self.Method = method
-        self.Key = key
+class LogType(Enum):
+    Undefined = -1
+    AppExit = 0
+    Play = 1
+    Load = 2
+    SeekPos = 3
+    Resume = 4
+    Pause = 5
+
+    __all__ = None
+    @classmethod
+    @property
+    def all(cls):
+        if not cls.__all__:
+            cls.__all__ = {
+                LogType.AppExit: {
+                    cls.method: ELogMonitor.Instance.OnAppExit,
+                    cls.key: "App exit.",
+                },
+                LogType.Play: {
+                    cls.method: ELogMonitor.Instance.OnPlay,
+                    cls.key: "player._$play",
+                },
+                LogType.Load: {
+                    cls.method: ELogMonitor.Instance.OnLoadDuration,
+                    cls.key: "??? __onAudioPlayerLoad",
+                },
+                LogType.SeekPos: {
+                    cls.method: ELogMonitor.Instance.OnSeekPosition,
+                    cls.key: "OnSeek",
+                },
+                LogType.Resume: {
+                    cls.method:ELogMonitor.Instance.OnResume,
+                    cls.key: "??? player._$resume do",
+                },
+                LogType.Pause: {
+                    cls.method: ELogMonitor.Instance.OnPause,
+                    cls.key: "??? player._$pause do",
+                },
+            }
+        return cls.__all__
+    
+    @property
+    def method(self):
+        try:
+            return LogType.all[self][LogType.method]
+        except KeyError:
+            return None
+        except Exception:
+            Debug.LogError(traceback.format_exc())
+
+    @property
+    def key(self):
+        try:
+            return LogType.all[self][LogType.key]
+        except KeyError:
+            return None
+        except Exception:
+            Debug.LogError(traceback.format_exc())
 
 class ELogMonitor(Singleton, LoopObject):
     def __init__(self):
         super().__init__()
-        self.ModifiedTime = 0
-        self.LastestLog = INITIAL_SELF_LAST_LOG
-        self.LastUpdate = ZERO_DATETIME
-        self.LOG_TYPES = list[NeteaseLogType]()
-        self.LOG_TYPES.append(NeteaseLogType(
-            LOG_VALID_INFO.PLAY, self.OnPlay, "player._$play"
-        ))
-        self.LOG_TYPES.append(NeteaseLogType(
-            LOG_VALID_INFO.LOAD, self.OnLoadDuration, "???__onAudioPlayerLoad"
-        ))
-        self.LOG_TYPES.append(NeteaseLogType(
-            LOG_VALID_INFO.RESUME, self.OnResume, "player._$resumedo"
-        ))
-        self.LOG_TYPES.append(NeteaseLogType(
-            LOG_VALID_INFO.PAUSE, self.OnPause, "player._$pausedo"
-        ))
-
-    def InitializeSeekPosition(self):
-        self.LogFile.seek(0, 0)
 
     def OnStart(self):
         super().OnStart()
         Debug.LogLow('ELogMonitor.OnStart')
-        self.IsInitializing = True
-        self.LogFile = open(LOGPATH, "rb")
-        self.FileSize = os.path.getsize(LOGPATH)
-        self.InitializeSeekPosition()
-        self.Analysis()
-        self.IsInitializing = False
+        self.InitializeLog()
         Debug.LogLow('ELogMonitor.OnStartEnd')
+
+    def InitializeLog(self):
+        self.IsInitializing = True
+        self.FileSize = 0
+        self.SeekOffset = 1024
+        fileCreatTime = datetime.fromtimestamp(os.path.getctime(LOGPATH)).astimezone()
+        while True:
+            self.LogFile = None
+            self.LastestLog = INITIAL_SELF_LAST_LOG
+            self.LastUpdate = fileCreatTime
+            self.ModifiedTime = 0
+            if not self.CheckFileSize():
+                self.ReloadLogFile()
+            self.Analysis()
+            if LyricManager.Song and LyricManager.SongLength:
+                break
+            if self.SeekOffset >= self.FileSize:
+                break
+            self.SeekOffset *= 4
+        self.IsInitializing = False
 
     def OnUpdate(self):
         super().OnUpdate()
@@ -69,11 +119,13 @@ class ELogMonitor(Singleton, LoopObject):
         if self.ModifiedTime >= modifiedTime:
             return
         self.ModifiedTime = modifiedTime
-        self.CheckFileSize()
-        self.Analysis()
+        if self.CheckFileSize(): # which will raise Exception if failed too many times
+            self.Analysis()
+        else:
+            self.InitializeLog()
 
     def Analysis(self):
-        lines = self.GetDecodedLastestLines()
+        lines = self.GetLastestLines()
         if self.LastestLog == INITIAL_SELF_LAST_LOG:
             newLines = lines
         else:
@@ -84,12 +136,15 @@ class ELogMonitor(Singleton, LoopObject):
                     break
                 newLines.insert(0, line)
         for line in newLines:
-            self.AnalysisLog(line)
+            try:
+                self.AnalysisLog(line)
+            except Exception:
+                Debug.LogError(traceback.format_exc())
         if len(newLines)>0:
             self.LastestLog = newLines[-1]
     
-    def GetDecodedLastestLines(self) -> list[str]:
-        lines = self.GetLastLines()
+    def GetLastestLines(self) -> list[str]:
+        lines = self.LogFile.readlines()
         result = list[str]()
         isStart = True
         for each in lines:
@@ -100,119 +155,120 @@ class ELogMonitor(Singleton, LoopObject):
         result = self.Decode(result)
         return result
 
-    def GetLastLines(self):
-        try:
-            self.FileSize = os.path.getsize(LOGPATH)
-            if self.FileSize == 0:
-                return None
-            self.InitializeSeekPosition()
-            return self.LogFile.readlines()
-        except FileNotFoundError:
-            return None
-    
     def CheckFileSize(self):
-        currentFileSize = os.path.getsize(LOGPATH)
-        if currentFileSize >= self.FileSize:
-            self.FileSize = currentFileSize
-            return
-        self.InitializeSeekPosition()
-        for i in range(RELOAD_ATTEMPT):
-            try:
+        if not self.LogFile:
+            return False
+        # check file size
+        prevFileSize = self.FileSize
+        self.FileSize = os.path.getsize(LOGPATH)
+        if not self.FileSize: # None or 0
+            return False
+        return self.FileSize >= prevFileSize
+    
+    def ReloadLogFile(self):
+        for _ in range(RELOAD_ATTEMPT):
+            if self.LogFile:
                 self.LogFile.close()
-            except Exception:
-                pass
             try:
-                self.LogFile.close()
                 self.LogFile = open(LOGPATH, "rb")
                 self.FileSize = os.path.getsize(LOGPATH)
-                return
+                self.LogFile.seek(max(0, self.FileSize-self.SeekOffset), 0)
+                return False
             except Exception:
-                if i == RELOAD_ATTEMPT - 1:
-                    raise Exception(f"Open {LOGPATH} failed after try 10 times")
-                time.sleep(1)
+                Debug.LogError(traceback.format_exc())
+                tm.sleep(1)
+        raise Exception(f"Open {LOGPATH} failed after try {RELOAD_ATTEMPT} times")
 
     def AnalysisLog(self, content:str):
-        if not self.IsInitializing:
-            Debug.LogElog(content)
-        validInfo = self.CheckAppExit(content)
-        if validInfo == LOG_VALID_INFO.NONE:
-            validInfo = self.CheckOnSeekPosition(content)
-        if validInfo == LOG_VALID_INFO.NONE:
-            validInfo = self.CheckLogInfo(content)
-        if validInfo == LOG_VALID_INFO.NONE:
-            return # return if not valid info got
+        logType = self.CheckLogType(content)
+        if logType == LogType.Undefined:
+            # return if not defined info got
+            return
         if self.IsInitializing:
-            return # return if it's still initializing, only update output after initialization
+            # return if it's still initializing
+            # only update output after initialization
+            return
         
         # update last known position
-        if validInfo in [LOG_VALID_INFO.SEEKPOS, LOG_VALID_INFO.RESUME]:
-            DisplayManager.Instance.OutputCurrentLyric(DisplayManager.Instance.LastPosition)
+        if logType in [LogType.SeekPos, LogType.Resume]:
+            DisplayManager.Instance.OutputCurrentLyric(True)
         # clear output
-        if validInfo == LOG_VALID_INFO.APPEXIT:
+        if logType == LogType.AppExit:
             DisplayManager.WriteOutput("")
 
-    def GetLogTimeFromContent(self, content:str):
-        if self.LastUpdate == ZERO_DATETIME:
-            year = datetime.fromtimestamp(os.path.getctime(LOGPATH)).year
-        else:
-            year = self.LastUpdate.year
+    def GetLogInfoWithTime(self, content:str):
+        try:
+            time, info = self.GetInfoFromContent(content)
+            time = re.split("\\[(.*?)]", time)
+            time = datetime.strptime(time[3], "%Y-%m-%dT%H:%M:%S.%f%z")
+            return time, info
+        except TypeError as e:
+            if e.args[0] != 'cannot unpack non-iterable NoneType object':
+                Debug.LogError(traceback.format_exc())
+        except Exception:
+            Debug.LogError(traceback.format_exc())
         
-        zoneOffset = (datetime.now()-datetime.now().utcnow()).seconds/3600
-        zoneOffsetStr = str(int(zoneOffset)) + ":00"
-        if zoneOffset < 10:
-            zoneOffsetStr = "0" + zoneOffsetStr
-        
-        logTimeStr = str(year) + re.split(":", re.split("\\[(.*?)]", content)[1])[2] + ".000001+" + zoneOffsetStr
-        return datetime.strptime(logTimeStr, "%Y%m%d/%H%M%S.%f%z")
+        timeStr = str(self.LastUpdate.year)
+        timeStr += re.split(":", re.split("\\[(.*?)]", content)[1])[2]
+        timeStr += ".000001"
+        time = datetime.strptime(timeStr, "%Y%m%d/%H%M%S.%f").astimezone()
+        return time, None
 
-    def CheckAppExit(self, content:str) -> LOG_VALID_INFO:
-        if "Appexit." not in content:
-            return LOG_VALID_INFO.NONE
+    def OnAppExit(self, content:str) -> LogType:
         if DisplayManager.Instance.PlayState == PLAY_STATE.PLAYING:
-            DisplayManager.Instance.LastPosition += time.time() - DisplayManager.Instance.LastResume
+            DisplayManager.Instance.LastPosition += tm.time() - DisplayManager.Instance.LastResume
         DisplayManager.Instance.PlayState = PLAY_STATE.EXITED
-        logTime = self.GetLogTimeFromContent(content)
-        if logTime < self.LastUpdate:
-            return
-        self.LastUpdate = logTime
-        Debug.Log(logTime, "App Exit")
-        return LOG_VALID_INFO.APPEXIT
+        time, _ = self.GetLogInfoWithTime(content)
+        if time < self.LastUpdate:
+            return False
+        self.LastUpdate = time
+        Debug.Log(time, "App Exit")
+        return True
 
-    def CheckOnSeekPosition(self, content:str):
-        if 'OnSeekpos' not in content:
-            return LOG_VALID_INFO.NONE
-        logTime = self.GetLogTimeFromContent(content)
-        DisplayManager.Instance.LastPosition = float(content.split('OnSeekpos:')[1])
+    def OnSeekPosition(self, content:str):
+        time, _ = self.GetLogInfoWithTime(content)
+        DisplayManager.Instance.LastPosition = float(content.split('OnSeek pos:')[1])
         if DisplayManager.Instance.PlayState == PLAY_STATE.PLAYING:
-            DisplayManager.Instance.LastResume = logTime.timestamp()
-        Debug.Log(logTime, "Seek Position:", DisplayManager.Instance.LastPosition)
-        return LOG_VALID_INFO.SEEKPOS
+            DisplayManager.Instance.LastResume = time.timestamp()
+        Debug.Log(time, "Seek Position:", DisplayManager.Instance.LastPosition)
+        return True
 
-    def CheckLogInfo(self, content:str) -> LOG_VALID_INFO:
+    def CheckLogType(self, content:str) -> LogType:
+        for state in LogType:
+            if not state.key:
+                continue
+            if state.key not in content:
+                continue
+            Debug.LogElog(content)
+            if state.method(content):
+                return state
+        if not self.IsInitializing:
+            if "_p._$$Player" in  content:
+                Debug.LogElogPlayer(content)
+            else:
+                Debug.LogElogLow(content)
+        return LogType.Undefined
+
+    def GetInfoFromContent(self, content:str):
         if "[info]" not in content:
-            return LOG_VALID_INFO.NONE
-        logInfo = re.split("\\[info]", content.strip().strip("\n"))
-        result = re.split("\\[(.*?)]", logInfo[0])
-        if len(result) < 6:
-            return LOG_VALID_INFO.NONE
+            return None
+        infos =  re.split("\\[info]", content.strip().strip("\n"))
+        return infos
 
-        logTimeStr = result[5]
-        logTime = datetime.strptime(logTimeStr, "%Y-%m-%dT%H:%M:%S.%f%z")
-        # NOTE: the GetLogTimeFromContent() is less accuracy than the above one
-        # logTime = self.GetLogTimeFromContent(content)
+    def GetInfoLog(self, content:str) -> tuple[datetime, str]:
+        time, info = self.GetLogInfoWithTime(content)
+        if not info:
+            return None, None
+        if time < self.LastUpdate:
+            return None, None
+        self.LastUpdate = time
+        return time, info
 
-        if logTime < self.LastUpdate:
-            return LOG_VALID_INFO.NONE
-        self.LastUpdate = logTime
-        logInfo = logInfo[1]
-        for state in self.LOG_TYPES:
-            if state.Key in logInfo:
-                state.Method(logTime, logInfo)
-                return state.State
-        return LOG_VALID_INFO.NONE
-
-    def OnPlay(self, logTime:datetime, logInfo:str):
-        LyricManager.Song = str(re.split("_", re.split("\"", logInfo)[1])[0])
+    def OnPlay(self, content:str):
+        time, info = self.GetInfoLog(content)
+        if not info:
+            return False
+        LyricManager.Song = str(re.split("_", re.split("\"", info)[1])[0])
         if not self.IsInitializing:
             LyricManager.PrepareLyric()
             LyricManager.LastSyncAttemp = None
@@ -221,37 +277,94 @@ class ELogMonitor(Singleton, LoopObject):
         DisplayManager.Instance.NextLyricTime = 0.0
         # require load and resume next
         DisplayManager.Instance.PlayState = PLAY_STATE.STOPPED
-        Debug.Log(logTime, "Play song:", LyricManager.Song)
+        Debug.Log(time, "Play song:", LyricManager.Song)
+        return True
 
-    def OnLoadDuration(self, logTime:datetime, logInfo:str):
+    def OnLoadDuration(self, content:str):
+        time, info  = self.GetInfoLog(content)
+        if not info:
+            return False
+        
         LyricManager.SongLength = float(json.loads(
-            re.split("\t", logInfo)[0])["duration"])
-        Debug.Log(logTime, "Load Duration:", LyricManager.SongLength)
+            re.split("\t", info)[0])["duration"])
+        Debug.Log(time, "Load Duration:", LyricManager.SongLength)
+        return True
 
-    def OnResume(self, logTime:datetime, _):
+    def OnResume(self, content:str):
+        time, info = self.GetInfoLog(content)
+        if not info:
+            return False
+        
         DisplayManager.Instance.PlayState = PLAY_STATE.PLAYING
-        DisplayManager.Instance.LastResume = logTime.timestamp()
-        Debug.Log(logTime, "Resume")
+        DisplayManager.Instance.LastResume = time.timestamp()
+        Debug.Log(time, "Resume")
+        return True
 
-    def OnPause(self, logTime:datetime, _):
+    def OnPause(self, content:str):
+        time, info = self.GetInfoLog(content)
+        if not info:
+            return False
+        
         if DisplayManager.Instance.PlayState == PLAY_STATE.PLAYING:
-            DisplayManager.Instance.LastPosition += logTime.timestamp() - DisplayManager.Instance.LastResume
-            self.LastPauseTime = logTime.timestamp()
+            DisplayManager.Instance.LastPosition += time.timestamp() - DisplayManager.Instance.LastResume
+            self.LastPauseTime = time.timestamp()
         DisplayManager.Instance.PlayState = PLAY_STATE.STOPPED
-        Debug.Log(logTime, "Pause", DisplayManager.Instance.LastPosition)
+        Debug.Log(time, "Pause", DisplayManager.Instance.LastPosition)
+        return True
 
     @staticmethod
     def Decode(datas:list[str]) -> list[str]:
+        encodes = list()
+        for each in ENCODING:
+            if ENCODING[each] not in encodes:
+                encodes.append(ENCODING[each])
+                continue
+            print(ENCODING[each])
+            exit()
+        newCodes = list()
+        exclusiveNew = []
+
         stringList = list[str]()
         keys = ENCODING.keys()
+        encode, inLong = SPCEncode.UNKNOW, list()
         for data in datas:
+            # encode special encode
+            # print('____________________1', skip, len(inLong))
+            if encode.size + 2 > len(inLong):
+                inLong.append(str(data))
+                # print('____________________2', skip, len(inLong))
+                if encode.size + 2 == len(inLong):
+                    encoded = "【{}】".format('_'.join(inLong))
+                    if encode.known and encoded in encode.known.keys():
+                        encoded = encode.known[encoded]
+                    stringList.append(encoded)
+                continue
+            # check if it's special encode
+            encode = SPCEncode.GetByCode(data)
+            if encode is not SPCEncode.UNKNOW:
+                inLong = [encode.name, str(data)]
+                continue
+            # known encodes
             if data in keys:
                 stringList.append(ENCODING[data])
-            else:
-                stringList.append("【" + str(data) + "】")
-            continue
+                continue
+            # unknown encodes
+            stringList.append("【" + str(data) + "】")
+            if data not in newCodes and data not in exclusiveNew:
+                newCodes.append(data)
         resultList = list[str]()
         for each in str("".join(stringList)).split("\n"):
-            if each != "":
-                resultList.append(each)
+            if each == "":
+                continue
+            resultList.append(each)
+        if len(newCodes) > 0 and not ELogMonitor.Instance.IsInitializing :
+            Debug.LogAlert('----------------------------------------------------------------')
+            Debug.LogAlert('UNKNOW ENCODES FOUND--------------------------------------------')
+            Debug.LogAlert('new encodes: ', newCodes)
+            Debug.LogAlert('----------------------------------------------------------------')
+            for line in resultList:
+                for code in newCodes:
+                    if str(code) in line:
+                        print(line)
+                        break
         return resultList

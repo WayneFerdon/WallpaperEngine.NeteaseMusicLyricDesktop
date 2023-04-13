@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 00:43:33
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-04-11 20:20:23
+# LastEditTime: 2023-04-13 07:49:47
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\Debug.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -26,9 +26,11 @@ STD_INPUT_HANDLE = -10
 STD_OUTPUT_HANDLE = -11
 STD_ERROR_HANDLE = -12
 # text colors
+FOREGROUND_BLUE = 0x01  # blue.
 FOREGROUND_GREY = 0x08  # grey.
-FOREGROUND_BLUE = 0x09  # blue.
+FOREGROUND_BLUE_LIGHT = 0x09  # blue light.
 FOREGROUND_GREEN = 0x0a  # green.
+FOREGROUND_CYAN = 0x0b  # cyan.
 FOREGROUND_RED = 0x0c  # red.
 FOREGROUND_YELLOW = 0x0e  # yellow.
 # background colors
@@ -48,18 +50,59 @@ class Debug():
         ALERT = 2
         ERROR = 3
         ELOG = 4
+        ELOG_PLAYER = 5
+        ELOG_LOW = 6
 
-    LOG_ENABLE_LEVEL = {
-        LEVEL.LOG : True,
-        LEVEL.LOW : True,
-        LEVEL.ALERT : True,
-        LEVEL.ERROR : True,
-        LEVEL.ELOG : False
-    }
+        __all__ = None
 
-    @staticmethod
-    def OnLog(level:LEVEL, infos:str, type:int, time:datetime= None) -> str:
-        if not ENABLE_ELOG_DISPLAY or not Debug.LOG_ENABLE_LEVEL[level]:
+        @classmethod
+        @property
+        def all(cls):
+            if not cls.__all__:
+                cls.__all__ = {
+                    cls.LOG: {
+                        cls.enabled:True,
+                        cls.isWarp:False
+                    },
+                    cls.LOW: {
+                        cls.enabled:True,
+                        cls.isWarp:False
+                    },
+                    cls.ALERT: {
+                        cls.enabled:True,
+                        cls.isWarp:False
+                    },
+                    cls.ERROR: {
+                        cls.enabled:True,
+                        cls.isWarp:False
+                    },
+                    cls.ELOG: {
+                        cls.enabled:True,
+                        cls.isWarp:True
+                    },
+                    cls.ELOG_PLAYER: {
+                        cls.enabled:True,
+                        cls.isWarp:True
+                    },
+                    cls.ELOG_LOW: {
+                        cls.enabled:False,
+                        cls.enabled:True,
+                        cls.isWarp:True,
+                    },
+                }
+            return cls.__all__
+    
+        @property
+        def enabled(self):
+            return Debug.LEVEL.all[self][Debug.LEVEL.enabled]
+        
+        @property
+        def isWarp(self):
+            return Debug.LEVEL.all[self][Debug.LEVEL.isWarp]
+
+    @classmethod
+    def OnLog(cls, level:LEVEL, infos:str, type:int, time:datetime= None) -> str:
+        if not ENABLE_ELOG_DISPLAY or not level.enabled:
             return
         timeZone = ""
         if time is None:
@@ -70,7 +113,10 @@ class Debug():
         logInfo = ""
         for each in infos:
             logInfo += str(each) + " "
-        logInfo = "[{}]\t{}{}\t{}".format(level.name, time, timeZone, logInfo)
+        form = "[{}]\t{}{}\n{}"
+        if not level.isWarp:
+            form = form.replace('\n', '\t')
+        logInfo = form.format(level.name, time, timeZone, logInfo)
         SetCMDDisplay(type)
         print(logInfo)
         with open(PY_LOG_PATH, "a", encoding= "utf-8") as logFile:
@@ -84,7 +130,7 @@ class Debug():
 
     @staticmethod
     def LogLow(*info):
-        Debug.OnLog(Debug.LEVEL.LOW, info, FOREGROUND_BLUE)
+        Debug.OnLog(Debug.LEVEL.LOW, info, FOREGROUND_BLUE_LIGHT)
 
     @staticmethod
     def LogAlert(*info):
@@ -96,7 +142,15 @@ class Debug():
 
     @staticmethod
     def LogElog(*info):
-        Debug.OnLog(Debug.LEVEL.ELOG, info, FOREGROUND_GREY)
+        Debug.OnLog(Debug.LEVEL.ELOG, info, FOREGROUND_CYAN)
+
+    @staticmethod
+    def LogElogPlayer(*info):
+        Debug.OnLog(Debug.LEVEL.ELOG, info, FOREGROUND_BLUE)
+
+    @staticmethod
+    def LogElogLow(*info):
+        Debug.OnLog(Debug.LEVEL.ELOG_LOW, info, FOREGROUND_GREY)
 # endregion class Log
 
 # region common time methods
@@ -119,5 +173,5 @@ def SetCMDDisplay(type:int):
     ctypes.windll.kernel32.SetConsoleTextAttribute(STD_OUT_HANDLE, type)
 
 def ResetCMDDisplay():
-    SetCMDDisplay(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE)
+    SetCMDDisplay(FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE_LIGHT)
 # endregion constants

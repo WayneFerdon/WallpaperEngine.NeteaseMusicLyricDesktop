@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 02:00:21
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-04-12 05:39:44
+# LastEditTime: 2023-04-13 02:35:37
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\DisplayManager.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -40,12 +40,9 @@ class DisplayManager(Singleton, LoopObject):
         DisplayManager.WriteOutput("")
         if not LyricManager.Song:
             return
-        currentTimePosition = self.LastPosition
-        if self.PlayState == PLAY_STATE.PLAYING:
-            currentTimePosition += time.time() - self.LastResume
         LyricManager.PrepareLyric()
         LyricManager.LastSyncAttemp = None
-        self.OutputCurrentLyric(currentTimePosition)
+        self.OutputCurrentLyric(True)
 
     def OnFixUpdate(self):
         super().OnFixUpdate()
@@ -56,12 +53,16 @@ class DisplayManager(Singleton, LoopObject):
     # endregion main methods
 
     # region Lyric methods
-    def OutputCurrentLyric(self, targetTime:float= None):
-        if targetTime is None:
+    def OutputCurrentLyric(self, isSetPos:bool=False):
+        if not isSetPos:
             if not self.AutoUpdateCurrentLyric():
                 return
-        elif not self.SetCurrentLyric(targetTime):
-            return
+        else:
+            targetTime = self.LastPosition
+            if self.PlayState == PLAY_STATE.PLAYING:
+                targetTime += time.time() - self.LastResume
+            if not self.SetCurrentLyric(targetTime):
+                return
         output = self.GetOutput()
         if output == self.OutputHtml:
             return

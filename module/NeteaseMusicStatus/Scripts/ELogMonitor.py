@@ -152,7 +152,7 @@ class ELogMonitor(Singleton, LoopObject):
                 result.append(b"\n")
             result += each
             isStart = False
-        result = self.Decode(result)
+        result = self.Decode(result, not self.IsInitializing)
         return result
 
     def CheckFileSize(self):
@@ -313,7 +313,7 @@ class ELogMonitor(Singleton, LoopObject):
         return True
 
     @staticmethod
-    def Decode(datas:list[str]) -> list[str]:
+    def Decode(datas:list[str], alertNewEncodes:bool=True) -> list[str]:
         encodes = list()
         for each in ENCODING:
             if ENCODING[each] not in encodes:
@@ -357,7 +357,7 @@ class ELogMonitor(Singleton, LoopObject):
             if each == "":
                 continue
             resultList.append(each)
-        if len(newCodes) > 0 and not ELogMonitor.Instance.IsInitializing :
+        if len(newCodes) > 0 and alertNewEncodes:
             Debug.LogAlert('----------------------------------------------------------------')
             Debug.LogAlert('UNKNOW ENCODES FOUND--------------------------------------------')
             Debug.LogAlert('new encodes: ', newCodes)

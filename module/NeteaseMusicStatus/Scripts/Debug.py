@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 00:43:33
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-04-13 07:49:47
+# LastEditTime: 2023-04-14 02:19:22
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\Debug.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -12,7 +12,7 @@
 # ----------------------------------------------------------------
 
 import ctypes
-from enum import Enum
+from PropertyEnum import *
 from datetime import datetime
 
 # region log display switch
@@ -44,7 +44,7 @@ STD_OUT_HANDLE = ctypes.windll.kernel32.GetStdHandle(STD_OUTPUT_HANDLE)
 
 # region class Log
 class Debug():
-    class LEVEL(Enum):
+    class LEVEL(PropertyEnum):
         LOG = 0
         LOW = 1
         ALERT = 2
@@ -53,55 +53,33 @@ class Debug():
         ELOG_PLAYER = 5
         ELOG_LOW = 6
 
-        __all__ = None
+        @enumproperty
+        def enabled(self) -> bool: ...
+        @enumproperty
+        def isWarp(self) -> bool: ...
 
         @classmethod
-        @property
-        def all(cls):
-            if not cls.__all__:
-                cls.__all__ = {
-                    cls.LOG: {
-                        cls.enabled:True,
-                        cls.isWarp:False
-                    },
-                    cls.LOW: {
-                        cls.enabled:True,
-                        cls.isWarp:False
-                    },
-                    cls.ALERT: {
-                        cls.enabled:True,
-                        cls.isWarp:False
-                    },
-                    cls.ERROR: {
-                        cls.enabled:True,
-                        cls.isWarp:False
-                    },
-                    cls.ELOG: {
-                        cls.enabled:True,
-                        cls.isWarp:True
-                    },
-                    cls.ELOG_PLAYER: {
-                        cls.enabled:True,
-                        cls.isWarp:True
-                    },
-                    cls.ELOG_LOW: {
-                        cls.enabled:False,
-                        cls.enabled:True,
-                        cls.isWarp:True,
-                    },
-                }
-            return cls.__all__
-    
-        @property
-        def enabled(self):
-            return Debug.LEVEL.all[self][Debug.LEVEL.enabled]
-        
-        @property
-        def isWarp(self):
-            return Debug.LEVEL.all[self][Debug.LEVEL.isWarp]
+        def __init_properties__(cls) -> None:
+            cls.LOG.enabled = True
+            cls.LOW.enabled = True
+            cls.ALERT.enabled = True
+            cls.ERROR.enabled = True
+            cls.ELOG.enabled = True
+            cls.ELOG_PLAYER.enabled = True
+            cls.ELOG_LOW.enabled = False
+            # cls.ELOG_LOW.enabled = True
 
-    @classmethod
-    def OnLog(cls, level:LEVEL, infos:str, type:int, time:datetime= None) -> str:
+            cls.LOG.isWarp = False
+            cls.LOW.isWarp = False
+            cls.ALERT.isWarp = False
+            cls.ERROR.isWarp = False
+            cls.ELOG.isWarp = True
+            cls.ELOG_PLAYER.isWarp = True
+            cls.ELOG_LOW.isWarp = True
+            return super().__init_properties__()
+
+    @staticmethod
+    def OnLog(level:LEVEL, infos:str, type:int, time:datetime= None) -> str:
         if not ENABLE_ELOG_DISPLAY or not level.enabled:
             return
         timeZone = ""

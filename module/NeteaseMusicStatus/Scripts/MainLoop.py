@@ -2,8 +2,8 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 02:11:09
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-04-12 05:43:42
-# FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\MainLoop.py
+# LastEditTime: 2023-04-14 02:33:35
+# FilePath: \NeteaseMusice:\steamlibrary\steamapps\common\wallpaper_engine\projects\myprojects\neteasemusic\module\neteasemusicstatus\scripts\MainLoop.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
 # Licensed to the .NET Foundation under one or more agreements.
@@ -34,13 +34,13 @@ class LoopObject:
 class MainLoop(Singleton):
     def __init__(self):
         super().__init__()
-        self.CoroutineFixUpdate = MainLoop.FixUpdate()
-        self.CoroutineUpdate = MainLoop.Update()
-        self.FixUpdateLoop = asyncio.new_event_loop()
-        self.UpdateLoop = asyncio.new_event_loop()
-        self.ThreadFixUpdate = threading.Thread(target=MainLoop.StartLoop, args=(self.FixUpdateLoop, ))
-        self.ThreadUpdate = threading.Thread(target=MainLoop.StartLoop, args=(self.UpdateLoop, ))
-        self.LoopObjects = list[LoopObject]()
+        MainLoop.CoroutineFixUpdate = MainLoop.FixUpdate()
+        MainLoop.CoroutineUpdate = MainLoop.Update()
+        MainLoop.FixUpdateLoop = asyncio.new_event_loop()
+        MainLoop.UpdateLoop = asyncio.new_event_loop()
+        MainLoop.ThreadFixUpdate = threading.Thread(target=MainLoop.StartLoop, args=(MainLoop.FixUpdateLoop, ))
+        MainLoop.ThreadUpdate = threading.Thread(target=MainLoop.StartLoop, args=(MainLoop.UpdateLoop, ))
+        MainLoop.LoopObjects = list[LoopObject]()
 
     @staticmethod
     def StartLoop(loop:asyncio.AbstractEventLoop):
@@ -49,18 +49,18 @@ class MainLoop(Singleton):
 
     @classmethod
     def Register(cls, loopObject:LoopObject):
-        if loopObject not in cls.Instance.LoopObjects:
-            cls.Instance.LoopObjects.append(loopObject)
+        if loopObject not in cls.LoopObjects:
+            cls.LoopObjects.append(loopObject)
     
     @classmethod
     def Start(cls):
         try:
-            for each in cls.Instance.LoopObjects:
+            for each in cls.LoopObjects:
                 each.OnStart()
-            cls.Instance.ThreadFixUpdate.start()
-            cls.Instance.ThreadUpdate.start()
-            asyncio.run_coroutine_threadsafe(cls.Instance.CoroutineFixUpdate, cls.Instance.FixUpdateLoop)
-            asyncio.run_coroutine_threadsafe(cls.Instance.CoroutineUpdate, cls.Instance.UpdateLoop)
+            cls.ThreadFixUpdate.start()
+            cls.ThreadUpdate.start()
+            asyncio.run_coroutine_threadsafe(cls.CoroutineFixUpdate, cls.FixUpdateLoop)
+            asyncio.run_coroutine_threadsafe(cls.CoroutineUpdate, cls.UpdateLoop)
         except Exception as e:
             Debug.LogError(e, "\n", traceback.format_exc())
 
@@ -68,14 +68,14 @@ class MainLoop(Singleton):
     def OnFixUpdate(cls, interval):
         latestTime = time.time()
         # sleep to prevent Thread lock and conflict with self.Update()
-        for each in MainLoop.Instance.LoopObjects:
+        for each in MainLoop.LoopObjects:
             each.OnFixUpdate()
         time.sleep(max(0.001, latestTime + interval - time.time()))
     
     @classmethod
     def OnUpdate(cls):
             time.sleep(0.01)
-            for each in cls.Instance.LoopObjects:
+            for each in cls.LoopObjects:
                 each.OnUpdate()
 
     @classmethod

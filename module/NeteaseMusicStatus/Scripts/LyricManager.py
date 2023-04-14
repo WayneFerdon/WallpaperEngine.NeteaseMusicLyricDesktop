@@ -2,8 +2,8 @@
 # Author: WayneFerdon wayneferdon@hotmail.com
 # Date: 2023-04-11 19:55:43
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-04-12 07:50:58
-# FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\LyricManager.py
+# LastEditTime: 2023-04-14 02:42:28
+# FilePath: \NeteaseMusice:\steamlibrary\steamapps\common\wallpaper_engine\projects\myprojects\neteasemusic\module\neteasemusicstatus\scripts\LyricManager.py
 # ----------------------------------------------------------------
 # Copyright (c) 2023 by Wayne Ferdon Studio. All rights reserved.
 # Licensed to the .NET Foundation under one or more agreements.
@@ -15,42 +15,34 @@ import json
 import sqlite3
 from CharaterMethods import *
 from Constants import *
-from enum import Enum
+from PropertyEnum import *
 from pykakasi import kakasi
 from Singleton import Singleton
 from MainLoop import LoopObject
 from pyncm.apis import track
 from Debug import Debug
+from collections.abc import Callable
 
 class LyricManager(Singleton, LoopObject):
-    class LyricSource(Enum):
+    class LyricSource(PropertyEnum):
         InfoOnly=-1
         Online=0
         Cache=1
         Temp=2
         WebCache=3
 
-        __all__ = None
+        @enumproperty
+        def getLyric(self) -> Callable[[], dict[float, dict[str, str]]]: ...
+
         @classmethod
-        @property
-        def all(cls):
-            if not cls.__all__:
-                cls.__all__={                
-                    cls.InfoOnly: {cls.getter: LyricManager.GetInfoOnlyLyric},
-                    cls.Online: {cls.getter: LyricManager.GetLyricFromDataFunc(LyricManager.GetOnlineLyricData)},
-                    cls.Cache: {cls.getter: LyricManager.LoadLyricCache},
-                    cls.Temp: {cls.getter: LyricManager.GetLyricFromDataFunc(LyricManager.GetTempLyricData)},
-                    cls.WebCache: {cls.getter: LyricManager.GetLyricFromDataFunc(LyricManager.GetCacheWebLyricData)},
-                }
-            return cls.__all__
-
-        @property
-        def definition(self):
-            return LyricManager.LyricSource.all[self]
-
-        @property
-        def getter(self):
-            return self.definition[LyricManager.LyricSource.getter]
+        def __init_properties__(cls) -> None:
+            outer = LyricManager
+            cls.InfoOnly.getLyric = outer.GetInfoOnlyLyric
+            cls.Online.getLyric = outer.GetLyricFromDataFunc(outer.GetOnlineLyricData)
+            cls.Cache.getLyric = outer.LoadLyricCache
+            cls.Temp.getLyric = outer.GetLyricFromDataFunc(outer.GetTempLyricData)
+            cls.WebCache.getLyric = outer.GetLyricFromDataFunc(outer.GetCacheWebLyricData)
+            return super().__init_properties__()
 
     def __init__(self) -> None:
         super().__init__()
@@ -244,6 +236,13 @@ class LyricManager(Singleton, LoopObject):
                 continue
             source = source.replace(keyName, fix["lyricReplace"])
             roma = roma.replace(fix["roma"], fix["romaReplace"])
+        testA = RemoveAll(roma,' ')
+        testB = RemoveAll(romaSource,' ')
+        if testA != testB:
+            print('FixHiragana-----------------------')
+            print(testA)
+            print(testB)
+            print('End FixHiragana-----------------------')
         return source, roma
     
     @staticmethod
@@ -369,7 +368,7 @@ class LyricManager(Singleton, LoopObject):
         return result
 
     @classmethod
-    def GetLyric(cls, isOnline:bool):
+    def GetLyric(cls, isOnline:bool) -> dict[float, dict[str, str]]:
         if isOnline:
             sources = [cls.LyricSource.Online]
             Debug.LogLow("Syncing lyric online")
@@ -382,7 +381,7 @@ class LyricManager(Singleton, LoopObject):
             ]
         
         for source in sources:
-            result = source.getter()
+            result = source.getLyric()
             if not result:
                 continue
             synced = source == cls.LyricSource.Online

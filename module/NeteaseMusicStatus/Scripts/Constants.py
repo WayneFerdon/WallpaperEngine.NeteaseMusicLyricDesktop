@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 00:50:50
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-04-13 03:49:55
+# LastEditTime: 2023-04-13 10:02:11
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\Constants.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -40,7 +40,6 @@ KANJI_LIB = "Hanzi2Kanji.json"
 EMPTY_LYRIC = {"Lyric": "", "Translation": ""}
 NULL_LYRIC = {0.0 :{"Lyric": "无歌词", "Translation": ""}}
 RELOAD_ATTEMPT = 10
-INITIAL_SELF_LAST_LOG = "INITIAL_SELF_LAST_LOG"
 
 HARD_FIXS = {
     '君（くん）':{

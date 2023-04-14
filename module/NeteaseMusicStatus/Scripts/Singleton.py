@@ -2,7 +2,7 @@
 # Author: WayneFerdon wayneferdon@hotmail.com
 # Date: 2023-04-12 05:18:18
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-04-12 05:22:08
+# LastEditTime: 2023-04-14 02:30:17
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\Singleton.py
 # ----------------------------------------------------------------
 # Copyright (c) 2023 by Wayne Ferdon Studio. All rights reserved.

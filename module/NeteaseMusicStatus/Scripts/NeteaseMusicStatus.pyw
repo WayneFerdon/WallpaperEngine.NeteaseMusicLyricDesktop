@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-08-26 14:44:48
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-04-12 05:32:09
+# LastEditTime: 2023-04-14 00:33:47
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\NeteaseMusicStatus.pyw
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -22,7 +22,7 @@ from DisplayManager import DisplayManager
 def Main():
     Debug.LogLow("Script Start")
     MainLoop()
-
+    
     # Init and listen on MainLoop Events by given order
     Debug.LogLow("Initialization Start")
     LyricManager()

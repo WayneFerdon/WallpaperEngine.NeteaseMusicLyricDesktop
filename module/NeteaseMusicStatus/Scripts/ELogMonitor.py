@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 02:30:29
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-04-13 08:06:42
+# LastEditTime: 2023-04-14 02:30:29
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\ELogMonitor.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -15,6 +15,7 @@ import re
 import time as tm
 import traceback
 import json
+from CharaterMethods import *
 from Constants import *
 from ELogEncoding import *
 from DisplayManager import DisplayManager
@@ -22,8 +23,10 @@ from Debug import Debug
 from Singleton import Singleton
 from MainLoop import LoopObject
 from LyricManager import LyricManager
+from PropertyEnum import *
+from collections.abc import Callable
 
-class LogType(Enum):
+class LogType(PropertyEnum):
     Undefined = -1
     AppExit = 0
     Play = 1
@@ -32,61 +35,31 @@ class LogType(Enum):
     Resume = 4
     Pause = 5
 
-    __all__ = None
-    @classmethod
-    @property
-    def all(cls):
-        if not cls.__all__:
-            cls.__all__ = {
-                LogType.AppExit: {
-                    cls.method: ELogMonitor.Instance.OnAppExit,
-                    cls.key: "App exit.",
-                },
-                LogType.Play: {
-                    cls.method: ELogMonitor.Instance.OnPlay,
-                    cls.key: "player._$play",
-                },
-                LogType.Load: {
-                    cls.method: ELogMonitor.Instance.OnLoadDuration,
-                    cls.key: "??? __onAudioPlayerLoad",
-                },
-                LogType.SeekPos: {
-                    cls.method: ELogMonitor.Instance.OnSeekPosition,
-                    cls.key: "OnSeek",
-                },
-                LogType.Resume: {
-                    cls.method:ELogMonitor.Instance.OnResume,
-                    cls.key: "??? player._$resume do",
-                },
-                LogType.Pause: {
-                    cls.method: ELogMonitor.Instance.OnPause,
-                    cls.key: "??? player._$pause do",
-                },
-            }
-        return cls.__all__
-    
-    @property
-    def method(self):
-        try:
-            return LogType.all[self][LogType.method]
-        except KeyError:
-            return None
-        except Exception:
-            Debug.LogError(traceback.format_exc())
+    @enumproperty 
+    def method(self) -> Callable[[str], bool]: ...
+    @enumproperty
+    def key(self) -> str: ...
 
-    @property
-    def key(self):
-        try:
-            return LogType.all[self][LogType.key]
-        except KeyError:
-            return None
-        except Exception:
-            Debug.LogError(traceback.format_exc())
+    @classmethod
+    def __init_properties__(cls) -> None:
+        cls.Play.method =  ELogMonitor.Instance.OnPlay
+        cls.AppExit.method = ELogMonitor.Instance.OnAppExit
+        cls.Play.method = ELogMonitor.Instance.OnPlay
+        cls.Load.method = ELogMonitor.Instance.OnLoadDuration
+        cls.SeekPos.method = ELogMonitor.Instance.OnSeekPosition
+        cls.Resume.method = ELogMonitor.Instance.OnResume
+        cls.Pause.method = ELogMonitor.Instance.OnPause
+
+        cls.AppExit.key = "App exit."
+        cls.Play.key = "player._$play"
+        cls.Load.key = "??? __onAudioPlayerLoad"
+        cls.SeekPos.key = "OnSeek"
+        cls.Resume.key = "??? player._$resume do"
+        cls.Pause.key = "??? player._$pause do"
+        
+        return super().__init_properties__()
 
 class ELogMonitor(Singleton, LoopObject):
-    def __init__(self):
-        super().__init__()
-
     def OnStart(self):
         super().OnStart()
         Debug.LogLow('ELogMonitor.OnStart')
@@ -100,7 +73,7 @@ class ELogMonitor(Singleton, LoopObject):
         fileCreatTime = datetime.fromtimestamp(os.path.getctime(LOGPATH)).astimezone()
         while True:
             self.LogFile = None
-            self.LastestLog = INITIAL_SELF_LAST_LOG
+            self.LastestLog = None
             self.LastUpdate = fileCreatTime
             self.ModifiedTime = 0
             if not self.CheckFileSize():
@@ -125,35 +98,45 @@ class ELogMonitor(Singleton, LoopObject):
             self.InitializeLog()
 
     def Analysis(self):
-        lines = self.GetLastestLines()
-        if self.LastestLog == INITIAL_SELF_LAST_LOG:
-            newLines = lines
-        else:
-            lines.reverse()
-            newLines = list[str]()
-            for line in lines:
-                if line == self.LastestLog:
-                    break
-                newLines.insert(0, line)
-        for line in newLines:
+        lastest = self.GetLastestLines()
+        new = list[str]()
+        while len(lastest) > 0:
+            line = lastest.pop()
+            if line == self.LastestLog:
+                break
+            new.append(line)
+        
+        remain = len(new)
+        while remain > 0:
+            line = new.pop()
+            remain = len(new)
+            if remain == 0:
+                self.LastestLog = line
             try:
                 self.AnalysisLog(line)
             except Exception:
                 Debug.LogError(traceback.format_exc())
-        if len(newLines)>0:
-            self.LastestLog = newLines[-1]
     
     def GetLastestLines(self) -> list[str]:
-        lines = self.LogFile.readlines()
-        result = list[str]()
-        isStart = True
-        for each in lines:
-            if not isStart:
-                result.append(b"\n")
-            result += each
-            isStart = False
-        result = self.Decode(result, not self.IsInitializing)
-        return result
+        lines = (b"\n").join(self.LogFile.readlines())
+        decoded, newEncode = self.Decode(lines)
+        decoded = RemoveAll(decoded.split("\n"), "")
+        if len(newEncode) == 0:
+            return decoded
+        if self.IsInitializing:
+            return decoded
+        Debug.LogAlert('------------------------------------------------------')
+        Debug.LogAlert('UNKNOW ENCODES FOUND----------------------------------')
+        Debug.LogAlert('new encodes: ', newEncode)
+        Debug.LogAlert('------------------------------------------------------')
+        for line in decoded:
+            for code in decoded:
+                if str(code) not in line:
+                    continue
+                print(line)
+                break
+        Debug.LogAlert('END UNKNOW ENCODES FOUND------------------------------')
+        return decoded
 
     def CheckFileSize(self):
         if not self.LogFile:
@@ -197,21 +180,15 @@ class ELogMonitor(Singleton, LoopObject):
             DisplayManager.WriteOutput("")
 
     def GetLogInfoWithTime(self, content:str):
-        try:
-            time, info = self.GetInfoFromContent(content)
+        if "[info]" in content:
+            time, info =  re.split("\\[info]", content.strip().strip("\n"))
             time = re.split("\\[(.*?)]", time)
             time = datetime.strptime(time[3], "%Y-%m-%dT%H:%M:%S.%f%z")
             return time, info
-        except TypeError as e:
-            if e.args[0] != 'cannot unpack non-iterable NoneType object':
-                Debug.LogError(traceback.format_exc())
-        except Exception:
-            Debug.LogError(traceback.format_exc())
-        
-        timeStr = str(self.LastUpdate.year)
-        timeStr += re.split(":", re.split("\\[(.*?)]", content)[1])[2]
-        timeStr += ".000001"
-        time = datetime.strptime(timeStr, "%Y%m%d/%H%M%S.%f").astimezone()
+        time = str(self.LastUpdate.year)
+        time += re.split(":", re.split("\\[(.*?)]", content)[1])[2]
+        time += ".000001"
+        time = datetime.strptime(time, "%Y%m%d/%H%M%S.%f").astimezone()
         return time, None
 
     def OnAppExit(self, content:str) -> LogType:
@@ -224,7 +201,7 @@ class ELogMonitor(Singleton, LoopObject):
         self.LastUpdate = time
         Debug.Log(time, "App Exit")
         return True
-
+    
     def OnSeekPosition(self, content:str):
         time, _ = self.GetLogInfoWithTime(content)
         DisplayManager.Instance.LastPosition = float(content.split('OnSeek pos:')[1])
@@ -248,12 +225,6 @@ class ELogMonitor(Singleton, LoopObject):
             else:
                 Debug.LogElogLow(content)
         return LogType.Undefined
-
-    def GetInfoFromContent(self, content:str):
-        if "[info]" not in content:
-            return None
-        infos =  re.split("\\[info]", content.strip().strip("\n"))
-        return infos
 
     def GetInfoLog(self, content:str) -> tuple[datetime, str]:
         time, info = self.GetLogInfoWithTime(content)
@@ -284,10 +255,11 @@ class ELogMonitor(Singleton, LoopObject):
         time, info  = self.GetInfoLog(content)
         if not info:
             return False
-        
+        Debug.Log(time, "Load Duration of {}:".format(LyricManager.Song), LyricManager.SongLength)
+        if not LyricManager.Song:
+            return False
         LyricManager.SongLength = float(json.loads(
             re.split("\t", info)[0])["duration"])
-        Debug.Log(time, "Load Duration:", LyricManager.SongLength)
         return True
 
     def OnResume(self, content:str):
@@ -313,31 +285,20 @@ class ELogMonitor(Singleton, LoopObject):
         return True
 
     @staticmethod
-    def Decode(datas:list[str], alertNewEncodes:bool=True) -> list[str]:
-        encodes = list()
-        for each in ENCODING:
-            if ENCODING[each] not in encodes:
-                encodes.append(ENCODING[each])
-                continue
-            print(ENCODING[each])
-            exit()
-        newCodes = list()
-        exclusiveNew = []
-
-        stringList = list[str]()
+    def Decode(datas:list[bytes]) -> list[str]:
+        newCodes, exclusiveNew = list[bytes](), list[bytes]()
+        strings = list[str]()
         keys = ENCODING.keys()
-        encode, inLong = SPCEncode.UNKNOW, list()
+        encode, inLong = SPCEncode.UNKNOW, list[str]()
         for data in datas:
             # encode special encode
-            # print('____________________1', skip, len(inLong))
             if encode.size + 2 > len(inLong):
                 inLong.append(str(data))
-                # print('____________________2', skip, len(inLong))
                 if encode.size + 2 == len(inLong):
                     encoded = "【{}】".format('_'.join(inLong))
                     if encode.known and encoded in encode.known.keys():
                         encoded = encode.known[encoded]
-                    stringList.append(encoded)
+                    strings.append(encoded)
                 continue
             # check if it's special encode
             encode = SPCEncode.GetByCode(data)
@@ -346,25 +307,13 @@ class ELogMonitor(Singleton, LoopObject):
                 continue
             # known encodes
             if data in keys:
-                stringList.append(ENCODING[data])
+                strings.append(ENCODING[data])
                 continue
             # unknown encodes
-            stringList.append("【" + str(data) + "】")
-            if data not in newCodes and data not in exclusiveNew:
-                newCodes.append(data)
-        resultList = list[str]()
-        for each in str("".join(stringList)).split("\n"):
-            if each == "":
+            strings.append("【" + str(data) + "】")
+            if data in newCodes:
                 continue
-            resultList.append(each)
-        if len(newCodes) > 0 and alertNewEncodes:
-            Debug.LogAlert('----------------------------------------------------------------')
-            Debug.LogAlert('UNKNOW ENCODES FOUND--------------------------------------------')
-            Debug.LogAlert('new encodes: ', newCodes)
-            Debug.LogAlert('----------------------------------------------------------------')
-            for line in resultList:
-                for code in newCodes:
-                    if str(code) in line:
-                        print(line)
-                        break
-        return resultList
+            if data in exclusiveNew:
+                continue
+            newCodes.append(data)
+        return "".join(strings), newCodes

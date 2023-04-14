@@ -2,7 +2,7 @@
 # Author: WayneFerdon wayneferdon@hotmail.com
 # Date: 2023-04-11 19:55:43
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-04-13 08:20:40
+# LastEditTime: 2023-04-14 01:36:12
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\ELogEncoding.py
 # ----------------------------------------------------------------
 # Copyright (c) 2023 by Wayne Ferdon Studio. All rights reserved.
@@ -11,9 +11,9 @@
 # See the LICENSE file in the project root for more information.
 # ----------------------------------------------------------------
 
-from enum import Enum
+from PropertyEnum import *
 
-class SPCEncode(Enum):
+class SPCEncode(PropertyEnum):
     UNKNOW = 0
     EUR = 1 # 带注音的西文
     SGN = 2 # 符号
@@ -22,67 +22,41 @@ class SPCEncode(Enum):
     KR = 5 # 韩国谚文
     SHARP = 6 # 韩国谚文
 
-    __all__ = None
+    @enumproperty
+    def size(self) -> int: ...
+    @enumproperty
+    def known(self) -> dict[str,str]: ...
+    @enumproperty
+    def codes(self) -> list[int]: ...
+
     @classmethod
-    @property
-    def all(cls):
-        if not cls.__all__:
-            cls.__all__ = {
-                cls.UNKNOW: {
-                    cls.size: -2,
-                    cls.codes: []
-                },
-                cls.EUR: {
-                    cls.size: 1,
-                    cls.codes: [4],
-                },
-                cls.SHARP: {
-                    cls.size: 1,
-                    cls.codes: [10],
-                    cls.known:{
-                        "【SHARP_10_b'\\n'】":"#"
-                    }
-                },
-                cls.SGN: {
-                    cls.size: 2,
-                    cls.codes: [23, 202, 203],
-                },
-                cls.HAN: {
-                    cls.size: 2,
-                    cls.codes: [66,83,96,113,172,189],
-                },
-                cls.HIRA: {
-                    cls.size: 2,
-                    cls.codes: [6],
-                },
-                cls.KR: {
-                    cls.size: 2,
-                    cls.codes: [142,159,232,249],
-                },
-            }
-        return cls.__all__
+    def __init_properties__(cls) -> None:
+        cls.UNKNOW.size = -2
+        cls.EUR.size = 1
+        cls.SHARP.size = 1
+        cls.SGN.size = 2
+        cls.HAN.size = 2
+        cls.HIRA.size = 2
+        cls.KR.size = 2
+
+        cls.UNKNOW.codes = []
+        cls.EUR.codes = [4]
+        cls.SHARP.codes = [10]
+        cls.SGN.codes = [23, 202, 203]
+        cls.HAN.codes = [66,83,96,113,172,189]
+        cls.HIRA.codes = [6]
+        cls.KR.codes = [142,159,232,249]
+
+        cls.SHARP.known = {
+            "【SHARP_10_b'\\n'】":"#"
+        }
     
     @classmethod
     def GetByCode(cls, code:int):
-        for encode in cls.all:
+        for encode in cls.definitions:
             if code in encode.codes:
                 return encode
         return SPCEncode.UNKNOW
-
-    @property
-    def size(self):
-        return SPCEncode.all[self][SPCEncode.size]
-
-    @property
-    def known(self) -> dict[str,str]:
-        try:
-            return SPCEncode.all[self][SPCEncode.known]
-        except KeyError:
-            return None
-
-    @property
-    def codes(self):
-        return SPCEncode.all[self][SPCEncode.codes]
 
 # region known Charaters
 # TV动画《皿三昧》片尾曲 ；TVアニメ「さらざんまい」EDテーマ

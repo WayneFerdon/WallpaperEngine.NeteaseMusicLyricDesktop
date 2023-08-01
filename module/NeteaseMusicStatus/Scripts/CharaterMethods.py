@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 00:48:47
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-04-11 11:13:26
+# LastEditTime: 2023-08-01 22:19:49
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\CharaterMethods.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -15,11 +15,16 @@ import re
 
 # region common string methods
 def RemoveAll(source:list[str]|str, target:str) -> list[str]|str:
+    if type(source) == str:
+        str(source).replace(target, '')
+        return source
     while target in source:
         source.remove(target)
     return source
 
 def ReplaceAll(source:str, target:str, replacement:str):
+    if target == replacement:
+        return source
     while target in source:
         source = source.replace(target, replacement)
     return source

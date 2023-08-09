@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 00:50:50
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-04-13 10:02:11
+# LastEditTime: 2023-08-08 23:14:17
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\Constants.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -43,10 +43,34 @@ RELOAD_ATTEMPT = 10
 
 HARD_FIXS = {
     '君（くん）':{
-        'romaMatch':'ki mi',
-        'lyricReplace': '君（きみ）',
         'roma': 'kun',
-        'romaReplace':'kimi',
+        'romaMatch': 'ki mi',
+        'lyricReplace': '君（きみ）',
+        'romaReplace': 'kimi',
+    },
+    '人（にん）':{
+        'roma': 'nin',
+        'romaMatch': 'hi to',
+        'lyricReplace': '人（ひと）',
+        'romaReplace': 'hito',
+    },
+    '失（う）':{
+        'roma': 'u',
+        'romaMatch': 'u shi na',
+        'lyricReplace': '失（うしな）',
+        'romaReplace': 'ushina',
+    },
+    '泡沫（ほうまつ）':{
+        'roma': 'houmotsu',
+        'romaMatch': 'u ta ka ta',
+        'lyricReplace': '泡沫（うたかた）',
+        'romaReplace': 'utakata',
+    },
+    '齣（こま）':{
+        'roma': 'koma',
+        'romaMatch': 'de',
+        'lyricReplace': '齣（で）',
+        'romaReplace': 'de',
     }
 }
 # endregion paths and default values

@@ -2,7 +2,7 @@
 # Author: WayneFerdon wayneferdon@hotmail.com
 # Date: 2023-04-11 19:55:43
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-04-14 02:42:28
+# LastEditTime: 2023-08-08 23:15:34
 # FilePath: \NeteaseMusice:\steamlibrary\steamapps\common\wallpaper_engine\projects\myprojects\neteasemusic\module\neteasemusicstatus\scripts\LyricManager.py
 # ----------------------------------------------------------------
 # Copyright (c) 2023 by Wayne Ferdon Studio. All rights reserved.
@@ -13,6 +13,7 @@
 
 import json
 import sqlite3
+import traceback
 from CharaterMethods import *
 from Constants import *
 from PropertyEnum import *
@@ -113,6 +114,7 @@ class LyricManager(Singleton, LoopObject):
                 data = json.loads(result[0][6:])
                 data['name'] = title
             except Exception:
+                Debug.LogError(traceback.format_exc())
                 continue
             id = str(data['musicId'])
             songData[str(id)] = data
@@ -148,6 +150,8 @@ class LyricManager(Singleton, LoopObject):
         for lyric in lyrics:
             lyric = re.split("\\[(.*?)]", lyric)
             try:
+                if len(lyric) < 2:
+                    continue
                 time = lyric[1]
                 if "by" in time:
                     continue
@@ -160,6 +164,7 @@ class LyricManager(Singleton, LoopObject):
                 time = minute * 60000 + second * 1000 + millisecond
                 timeline[time] = lyric
             except Exception:
+                Debug.LogError(traceback.format_exc())
                 pass
         return timeline
     
@@ -237,12 +242,17 @@ class LyricManager(Singleton, LoopObject):
             source = source.replace(keyName, fix["lyricReplace"])
             roma = roma.replace(fix["roma"], fix["romaReplace"])
         testA = RemoveAll(roma,' ')
+        testA = RemoveAll(testA,'?')
+        testA = RemoveAll(testA,'？')
         testB = RemoveAll(romaSource,' ')
-        if testA != testB:
-            print('FixHiragana-----------------------')
-            print(testA)
-            print(testB)
-            print('End FixHiragana-----------------------')
+        testB = RemoveAll(testB,'?')
+        testB = RemoveAll(testB,'？')
+        if (testA is not None) and (testB is not None) and (testA not in testB):
+            Debug.LogLow('FixHiragana-----------------------')
+            Debug.LogLow('source, roma:', source, roma)
+            Debug.LogLow('testA:', testA)
+            Debug.LogLow('testB:', testB)
+            Debug.LogLow('End FixHiragana-----------------------')
         return source, roma
     
     @staticmethod
@@ -350,6 +360,8 @@ class LyricManager(Singleton, LoopObject):
         isJap:bool
     ) -> dict[float, dict[str, str]]:
         result = dict[float, dict[str, str]]()
+        if not lrcTimeline:
+            return result
         for time in lrcTimeline.keys():
             # lyrics
             lyric = lrcTimeline[time]
@@ -402,6 +414,7 @@ class LyricManager(Singleton, LoopObject):
                 lyric, trans, roma, isJap = cls.GetLyricTimelines(data)
                 return cls.GetConvertedLyric(lyric, trans, roma, isJap)
             except Exception:
+                Debug.LogError(traceback.format_exc())
                 return None
         
         return lambda : GetLyricFromData(getter)
@@ -416,6 +429,7 @@ class LyricManager(Singleton, LoopObject):
                 data = json.loads(f.read())
             return data
         except Exception:
+            Debug.LogError(traceback.format_exc())
             return None
     
     @classmethod
@@ -423,6 +437,7 @@ class LyricManager(Singleton, LoopObject):
         try:
             return dict[str, str](track.GetTrackLyrics(cls.Song))
         except Exception:
+            Debug.LogError(traceback.format_exc())
             return None
     
     @classmethod
@@ -438,11 +453,14 @@ class LyricManager(Singleton, LoopObject):
                 with open(result[0],'r',encoding='utf-8') as f:
                     data = json.loads(f.read())
                 splited = str(data['klyric']['lyric']).split('song?id=')
+                if len(splited) < 2:
+                    return None
                 splited = splited[1].split(']')
                 id = int(splited[0])
                 if id == cls.Song:
                     return data
         except Exception:
+            Debug.LogError(traceback.format_exc())
             return None
     
     @classmethod
@@ -464,7 +482,6 @@ class LyricManager(Singleton, LoopObject):
             roma = str(data['romalrc']["lyric"])
         except KeyError:
             roma = None
-        
         lyricTimeline = cls.GetLyricWithTimeline(lyric)
         translationTimeline = cls.GetLyricWithTimeline(translation)
         romaTimeline = cls.GetLyricWithTimeline(roma)

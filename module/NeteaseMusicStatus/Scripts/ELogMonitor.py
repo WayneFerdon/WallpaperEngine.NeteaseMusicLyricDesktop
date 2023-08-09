@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 02:30:29
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-04-14 02:30:29
+# LastEditTime: 2023-08-08 21:48:57
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\ELogMonitor.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -102,10 +102,9 @@ class ELogMonitor(Singleton, LoopObject):
         new = list[str]()
         while len(lastest) > 0:
             line = lastest.pop()
-            if line == self.LastestLog:
+            if self.LastestLog != '' and line == self.LastestLog:
                 break
             new.append(line)
-        
         remain = len(new)
         while remain > 0:
             line = new.pop()

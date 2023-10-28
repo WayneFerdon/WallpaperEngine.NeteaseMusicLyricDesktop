@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-08-26 14:44:48
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-04-14 00:33:47
+# LastEditTime: 2023-10-28 06:25:46
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\NeteaseMusicStatus.pyw
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -20,16 +20,22 @@ from DisplayManager import DisplayManager
 # endregion import
 
 def Main():
-    Debug.LogLow("Script Start")
+    # init Log configs
+    Debug.Log("Script Start")
+    Debug.LEVEL.LOWEST.alias = "ELOG_LOW"
+    Debug.LEVEL.LOW.alias = "ELOG"
+    Debug.LEVEL.HIGH.alias = "ELOG"
+    Debug.LEVEL.LOWEST.enabled = False
+    Debug.LEVEL.HIGH.isWarp = True
+    Debug.LEVEL.LOW.isWarp = True
+    Debug.LEVEL.LOWEST.isWarp = True
     MainLoop()
-    
     # Init and listen on MainLoop Events by given order
-    Debug.LogLow("Initialization Start")
+    Debug.Log("Initialization Start")
     LyricManager()
     ELogMonitor()
     DisplayManager()
-    Debug.LogLow("Initialization End")
-
+    Debug.Log("Initialization End")
     MainLoop.Start()
 
 if __name__ == "__main__":

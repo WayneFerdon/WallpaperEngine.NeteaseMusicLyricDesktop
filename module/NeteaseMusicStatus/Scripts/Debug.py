@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 00:43:33
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-04-14 02:19:22
+# LastEditTime: 2023-10-28 06:24:46
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\Debug.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -46,45 +46,34 @@ STD_OUT_HANDLE = ctypes.windll.kernel32.GetStdHandle(STD_OUTPUT_HANDLE)
 class Debug():
     class LEVEL(PropertyEnum):
         LOG = 0
-        LOW = 1
-        ALERT = 2
-        ERROR = 3
-        ELOG = 4
-        ELOG_PLAYER = 5
-        ELOG_LOW = 6
+        WARNING = 10
+        ERROR = 20
+        HIGHEST = 2
+        HIGH = 1
+        LOW = 5
+        LOWEST = -2
 
         @enumproperty
         def enabled(self) -> bool: ...
         @enumproperty
         def isWarp(self) -> bool: ...
+        @enumproperty
+        def alias(self) -> str: ...
 
         @classmethod
         def __init_properties__(cls) -> None:
-            cls.LOG.enabled = True
-            cls.LOW.enabled = True
-            cls.ALERT.enabled = True
-            cls.ERROR.enabled = True
-            cls.ELOG.enabled = True
-            cls.ELOG_PLAYER.enabled = True
-            cls.ELOG_LOW.enabled = False
-            # cls.ELOG_LOW.enabled = True
-
-            cls.LOG.isWarp = False
-            cls.LOW.isWarp = False
-            cls.ALERT.isWarp = False
-            cls.ERROR.isWarp = False
-            cls.ELOG.isWarp = True
-            cls.ELOG_PLAYER.isWarp = True
-            cls.ELOG_LOW.isWarp = True
+            for level in Debug.LEVEL.definitions:
+                level.enabled = True
+                level.isWarp = False
             return super().__init_properties__()
 
     @staticmethod
-    def OnLog(level:LEVEL, infos:str, type:int, time:datetime= None) -> str:
+    def OnLog(level:LEVEL, infos:str, type:int, logTime:datetime=None) -> str:
         if not ENABLE_ELOG_DISPLAY or not level.enabled:
             return
         timeZone = ""
-        if time is None:
-            time = datetime.now()
+        if logTime is None:
+            logTime = datetime.now()
             timeZone = GetTimeZone()
         if not ENABLE_LOG:
             return
@@ -94,7 +83,8 @@ class Debug():
         form = "[{}]\t{}{}\n{}"
         if not level.isWarp:
             form = form.replace('\n', '\t')
-        logInfo = form.format(level.name, time, timeZone, logInfo)
+        levelName = level.alias if level.alias else level.name
+        logInfo = form.format(levelName, logTime, timeZone, logInfo)
         SetCMDDisplay(type)
         print(logInfo)
         with open(PY_LOG_PATH, "a", encoding= "utf-8") as logFile:
@@ -103,32 +93,32 @@ class Debug():
         return logInfo
 
     @staticmethod
-    def Log(time:datetime, *info):
-        Debug.OnLog(Debug.LEVEL.LOG, info, FOREGROUND_GREEN, time)
+    def Log(*info, logTime:datetime=None):
+        Debug.OnLog(Debug.LEVEL.LOG, info, FOREGROUND_BLUE_LIGHT, logTime)
 
     @staticmethod
-    def LogLow(*info):
-        Debug.OnLog(Debug.LEVEL.LOW, info, FOREGROUND_BLUE_LIGHT)
+    def LogWarning(*info, logTime:datetime=None):
+        Debug.OnLog(Debug.LEVEL.WARNING, info, FOREGROUND_YELLOW, logTime)
 
     @staticmethod
-    def LogAlert(*info):
-        Debug.OnLog(Debug.LEVEL.ALERT, info, FOREGROUND_YELLOW)
+    def LogError(*info, logTime:datetime=None):
+        Debug.OnLog(Debug.LEVEL.ERROR, info, FOREGROUND_RED, logTime)
 
     @staticmethod
-    def LogError(*info):
-        Debug.OnLog(Debug.LEVEL.ERROR, info, FOREGROUND_RED)
+    def LogHighest(*info, logTime:datetime=None):
+        Debug.OnLog(Debug.LEVEL.HIGHEST, info, FOREGROUND_GREEN, logTime)
 
     @staticmethod
-    def LogElog(*info):
-        Debug.OnLog(Debug.LEVEL.ELOG, info, FOREGROUND_CYAN)
+    def LogHigh(*info, logTime:datetime=None):
+        Debug.OnLog(Debug.LEVEL.HIGH, info, FOREGROUND_CYAN, logTime)
 
     @staticmethod
-    def LogElogPlayer(*info):
-        Debug.OnLog(Debug.LEVEL.ELOG, info, FOREGROUND_BLUE)
+    def LogLow(*info, logTime:datetime=None):
+        Debug.OnLog(Debug.LEVEL.LOW, info, FOREGROUND_BLUE, logTime)
 
     @staticmethod
-    def LogElogLow(*info):
-        Debug.OnLog(Debug.LEVEL.ELOG_LOW, info, FOREGROUND_GREY)
+    def LogLowest(*info, logTime:datetime=None):
+        Debug.OnLog(Debug.LEVEL.LOWEST, info, FOREGROUND_GREY, logTime)
 # endregion class Log
 
 # region common time methods

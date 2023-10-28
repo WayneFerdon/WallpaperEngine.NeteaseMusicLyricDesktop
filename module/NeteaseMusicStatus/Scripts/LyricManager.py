@@ -248,11 +248,11 @@ class LyricManager(Singleton, LoopObject):
         testB = RemoveAll(testB,'?')
         testB = RemoveAll(testB,'？')
         if (testA is not None) and (testB is not None) and (testA not in testB):
-            Debug.LogLow('FixHiragana-----------------------')
-            Debug.LogLow('source, roma:', source, roma)
-            Debug.LogLow('testA:', testA)
-            Debug.LogLow('testB:', testB)
-            Debug.LogLow('End FixHiragana-----------------------')
+            Debug.Log('FixHiragana-----------------------')
+            Debug.Log('source, roma:', source, roma)
+            Debug.Log('testA:', testA)
+            Debug.Log('testB:', testB)
+            Debug.Log('End FixHiragana-----------------------')
         return source, roma
     
     @staticmethod
@@ -383,7 +383,7 @@ class LyricManager(Singleton, LoopObject):
     def GetLyric(cls, isOnline:bool) -> dict[float, dict[str, str]]:
         if isOnline:
             sources = [cls.LyricSource.Online]
-            Debug.LogLow("Syncing lyric online")
+            Debug.Log("Syncing lyric online")
         else:
             sources = [
                 cls.LyricSource.Temp,
@@ -399,10 +399,10 @@ class LyricManager(Singleton, LoopObject):
             synced = source == cls.LyricSource.Online
             cls.Synced = synced
             if synced:
-                Debug.LogLow("Sync lyric online succeed")
+                Debug.Log("Sync lyric online succeed")
             return result
         if isOnline:
-            Debug.LogLow("Sync lyric online failed")
+            Debug.Log("Sync lyric online failed")
     
     @classmethod
     def GetLyricFromDataFunc(cls, getter:classmethod):

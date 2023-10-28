@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 02:30:29
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-08-08 21:48:57
+# LastEditTime: 2023-10-28 05:52:17
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\ELogMonitor.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -62,9 +62,9 @@ class LogType(PropertyEnum):
 class ELogMonitor(Singleton, LoopObject):
     def OnStart(self):
         super().OnStart()
-        Debug.LogLow('ELogMonitor.OnStart')
+        Debug.Log('ELogMonitor.OnStart')
         self.InitializeLog()
-        Debug.LogLow('ELogMonitor.OnStartEnd')
+        Debug.Log('ELogMonitor.OnStartEnd')
 
     def InitializeLog(self):
         self.IsInitializing = True
@@ -198,7 +198,7 @@ class ELogMonitor(Singleton, LoopObject):
         if time < self.LastUpdate:
             return False
         self.LastUpdate = time
-        Debug.Log(time, "App Exit")
+        Debug.LogHighest("App Exit", logTime=time)
         return True
     
     def OnSeekPosition(self, content:str):
@@ -206,7 +206,7 @@ class ELogMonitor(Singleton, LoopObject):
         DisplayManager.Instance.LastPosition = float(content.split('OnSeek pos:')[1])
         if DisplayManager.Instance.PlayState == PLAY_STATE.PLAYING:
             DisplayManager.Instance.LastResume = time.timestamp()
-        Debug.Log(time, "Seek Position:", DisplayManager.Instance.LastPosition)
+        Debug.LogHighest("Seek Position:", DisplayManager.Instance.LastPosition, logTime=time)
         return True
 
     def CheckLogType(self, content:str) -> LogType:
@@ -215,14 +215,14 @@ class ELogMonitor(Singleton, LoopObject):
                 continue
             if state.key not in content:
                 continue
-            Debug.LogElog(content)
+            Debug.LogHigh(content)
             if state.method(content):
                 return state
         if not self.IsInitializing:
             if "_p._$$Player" in  content:
-                Debug.LogElogPlayer(content)
+                Debug.LogLow(content)
             else:
-                Debug.LogElogLow(content)
+                Debug.LogLowest(content)
         return LogType.Undefined
 
     def GetInfoLog(self, content:str) -> tuple[datetime, str]:
@@ -247,14 +247,14 @@ class ELogMonitor(Singleton, LoopObject):
         DisplayManager.Instance.NextLyricTime = 0.0
         # require load and resume next
         DisplayManager.Instance.PlayState = PLAY_STATE.STOPPED
-        Debug.Log(time, "Play song:", LyricManager.Song)
+        Debug.LogHighest("Play song:", LyricManager.Song, logTime=time)
         return True
 
     def OnLoadDuration(self, content:str):
         time, info  = self.GetInfoLog(content)
         if not info:
             return False
-        Debug.Log(time, "Load Duration of {}:".format(LyricManager.Song), LyricManager.SongLength)
+        Debug.LogHighest("Load Duration of {}:".format(LyricManager.Song), LyricManager.SongLength, logTime=time)
         if not LyricManager.Song:
             return False
         LyricManager.SongLength = float(json.loads(
@@ -268,7 +268,7 @@ class ELogMonitor(Singleton, LoopObject):
         
         DisplayManager.Instance.PlayState = PLAY_STATE.PLAYING
         DisplayManager.Instance.LastResume = time.timestamp()
-        Debug.Log(time, "Resume")
+        Debug.LogHighest("Resume", logTime=time)
         return True
 
     def OnPause(self, content:str):
@@ -280,7 +280,7 @@ class ELogMonitor(Singleton, LoopObject):
             DisplayManager.Instance.LastPosition += time.timestamp() - DisplayManager.Instance.LastResume
             self.LastPauseTime = time.timestamp()
         DisplayManager.Instance.PlayState = PLAY_STATE.STOPPED
-        Debug.Log(time, "Pause", DisplayManager.Instance.LastPosition)
+        Debug.LogHighest("Pause", DisplayManager.Instance.LastPosition, logTime=time)
         return True
 
     @staticmethod

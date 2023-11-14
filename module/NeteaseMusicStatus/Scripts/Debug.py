@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 00:43:33
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-11-14 01:48:44
+# LastEditTime: 2023-11-15 00:12:13
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\Debug.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -60,12 +60,15 @@ class Debug():
         def isWarp(self) -> bool: ...
         @enumproperty
         def alias(self) -> str: ...
+        @enumproperty
+        def isDisplayTime(self) -> str: ...
 
         @classmethod
         def __init_properties__(cls) -> None:
             for level in Debug.LEVEL.definitions:
                 level.enabled = True
                 level.isWarp = False
+                level.isDisplayTime = True
             return super().__init_properties__()
 
     @staticmethod
@@ -73,23 +76,27 @@ class Debug():
         os.system("pause")
 
     @staticmethod
-    def OnLog(level:LEVEL, infos:str, type:int, logTime:datetime=None) -> str:
+    def OnLog(level:LEVEL, infos:list|str, type:int, logTime:datetime=None, isDisplayTime:None|bool=None) -> str:
         if not ENABLE_ELOG_DISPLAY or not level.enabled:
             return
-        timeZone = ""
-        if logTime is None:
-            logTime = datetime.now()
-            timeZone = GetTimeZone()
         if not ENABLE_LOG:
             return
-        logInfo = ""
-        for each in infos:
-            logInfo += str(each) + " "
-        form = "[{}]\t{}{}\n{}"
-        if not level.isWarp:
-            form = form.replace('\n', '\t')
-        levelName = level.alias if level.alias else level.name
-        logInfo = form.format(levelName, logTime, timeZone, logInfo)
+        if isDisplayTime is None:
+            isDisplayTime = level.isDisplayTime
+        
+        logInfo = " ".join(infos)
+
+        timeZone = str()
+        if isDisplayTime:
+            levelName = level.alias if level.alias else level.name
+            if logTime is None:
+                logTime = datetime.now()
+                timeZone = GetTimeZone()
+            form = "[{}]\t{}{}\n{}"
+            if not level.isWarp:
+                form = form.replace('\n', '\t')
+            logInfo = form.format(levelName, logTime, timeZone, logInfo)
+
         SetCMDDisplay(type)
         print(logInfo)
         with open(PY_LOG_PATH, "a", encoding= "utf-8") as logFile:
@@ -98,32 +105,32 @@ class Debug():
         return logInfo
 
     @staticmethod
-    def Log(*info, logTime:datetime=None):
-        Debug.OnLog(Debug.LEVEL.LOG, info, FOREGROUND_BLUE_LIGHT, logTime)
+    def Log(*info, logTime:datetime=None, isDisplayTime:None|bool=None):
+        Debug.OnLog(Debug.LEVEL.LOG, info, FOREGROUND_BLUE_LIGHT, logTime, isDisplayTime)
 
     @staticmethod
-    def LogWarning(*info, logTime:datetime=None):
-        Debug.OnLog(Debug.LEVEL.WARNING, info, FOREGROUND_YELLOW, logTime)
+    def LogWarning(*info, logTime:datetime=None, isDisplayTime:None|bool=None):
+        Debug.OnLog(Debug.LEVEL.WARNING, info, FOREGROUND_YELLOW, logTime, isDisplayTime)
 
     @staticmethod
-    def LogError(*info, logTime:datetime=None):
-        Debug.OnLog(Debug.LEVEL.ERROR, info, FOREGROUND_RED, logTime)
+    def LogError(*info, logTime:datetime=None, isDisplayTime:None|bool=None):
+        Debug.OnLog(Debug.LEVEL.ERROR, info, FOREGROUND_RED, logTime, isDisplayTime)
 
     @staticmethod
-    def LogHighest(*info, logTime:datetime=None):
-        Debug.OnLog(Debug.LEVEL.HIGHEST, info, FOREGROUND_GREEN, logTime)
+    def LogHighest(*info, logTime:datetime=None, isDisplayTime:None|bool=None):
+        Debug.OnLog(Debug.LEVEL.HIGHEST, info, FOREGROUND_GREEN, logTime, isDisplayTime)
 
     @staticmethod
-    def LogHigh(*info, logTime:datetime=None):
-        Debug.OnLog(Debug.LEVEL.HIGH, info, FOREGROUND_CYAN, logTime)
+    def LogHigh(*info, logTime:datetime=None, isDisplayTime:None|bool=None):
+        Debug.OnLog(Debug.LEVEL.HIGH, info, FOREGROUND_CYAN, logTime, isDisplayTime)
 
     @staticmethod
-    def LogLow(*info, logTime:datetime=None):
-        Debug.OnLog(Debug.LEVEL.LOW, info, FOREGROUND_BLUE, logTime)
+    def LogLow(*info, logTime:datetime=None, isDisplayTime:None|bool=None):
+        Debug.OnLog(Debug.LEVEL.LOW, info, FOREGROUND_BLUE, logTime, isDisplayTime)
 
     @staticmethod
-    def LogLowest(*info, logTime:datetime=None):
-        Debug.OnLog(Debug.LEVEL.LOWEST, info, FOREGROUND_GREY, logTime)
+    def LogLowest(*info, logTime:datetime=None, isDisplayTime:None|bool=None):
+        Debug.OnLog(Debug.LEVEL.LOWEST, info, FOREGROUND_GREY, logTime, isDisplayTime)
 # endregion class Log
 
 # region common time methods

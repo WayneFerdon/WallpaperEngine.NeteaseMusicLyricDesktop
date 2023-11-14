@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 02:00:21
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-11-15 04:13:01
+# LastEditTime: 2023-11-15 04:52:30
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\DisplayManager.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -60,7 +60,8 @@ class DisplayManager(Singleton, LoopObject):
             "state": self.PlayState.value,
             "lastResume": self.LastResume,
             "lastPos": self.LastPosition,
-            "song": LyricManager.Song
+            "song": LyricManager.Song,
+            "lastSync": LyricManager.LastCache
         })
         # lyric = json.dumps(LyricManager.Lyric)
         DisplayManager.WriteOutput(state)

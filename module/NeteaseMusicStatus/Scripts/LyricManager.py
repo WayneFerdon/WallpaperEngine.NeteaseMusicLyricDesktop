@@ -2,8 +2,8 @@
 # Author: WayneFerdon wayneferdon@hotmail.com
 # Date: 2023-04-11 19:55:43
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-08-08 23:15:34
-# FilePath: \NeteaseMusice:\steamlibrary\steamapps\common\wallpaper_engine\projects\myprojects\neteasemusic\module\neteasemusicstatus\scripts\LyricManager.py
+# LastEditTime: 2023-11-15 04:52:23
+# FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\LyricManager.py
 # ----------------------------------------------------------------
 # Copyright (c) 2023 by Wayne Ferdon Studio. All rights reserved.
 # Licensed to the .NET Foundation under one or more agreements.
@@ -56,6 +56,7 @@ class LyricManager(Singleton, LoopObject):
         LyricManager.__Kakasi__ = None
         LyricManager.Synced = False
         LyricManager.LastSyncAttemp = None
+        LyricManager.LastCache = 0
 
     def OnUpdate(self):
         super().OnUpdate()
@@ -501,6 +502,7 @@ class LyricManager(Singleton, LoopObject):
 
         with open(cache,'w',encoding='utf-8') as f:
             f.write(dump)
+        LyricManager.LastCache = datetime.now().timestamp()
     
     @classmethod
     def LoadLyricCache(cls) -> dict[float, dict[str, str]]:

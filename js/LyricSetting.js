@@ -1,9 +1,9 @@
 /*
  * @Author: wayneferdon wayneferdon@hotmail.com
  * @Date: 2022-08-06 15:13:29
- * @LastEditors: wayneferdon wayneferdon@hotmail.com
+ * @LastEditors: WayneFerdon wayneferdon@hotmail.com
  * @LastEditLyric: 2022-08-06 15:13:51
- * @FilePath: \bg\js\LyricSetting.js
+ * @FilePath: \NeteaseMusic\js\LyricSetting.js
  * ----------------------------------------------------------------
  * Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
  * Licensed to the .NET Foundation under one or more agreements.
@@ -24,7 +24,7 @@ var LyricSettings = function (Settings) {
     }
     if (Settings.LyricAlignment) {
         LyricSettingsObject.Align = Settings.LyricAlignment.value;
-        Lyric.style.textAlign = LyricSettingsObject.Align;
+        LyricObject.style.textAlign = LyricSettingsObject.Align;
         if (Settings.LyricAlignment.value == 'left') {
             LyricSettingsObject.AlignPX = 40;
         }
@@ -34,20 +34,20 @@ var LyricSettings = function (Settings) {
         else {
             LyricSettingsObject.AlignPX = 0;
         }
-        Lyric.style.left = LyricPositionX - 50 + LyricSettingsObject.AlignPX + '%';
+        LyricObject.style.left = LyricPositionX - 50 + LyricSettingsObject.AlignPX + '%';
     }
     if (Settings.LyricFont) {
         if (isNaN(Settings.LyricFont.value) && Settings.LyricFont.value) {
             SetFont(Settings.LyricFont.value);
-            Lyric.style.fontFamily = Settings.LyricFont.value.replace(/:/g, ' ') + ", sans-serif";
+            LyricObject.style.fontFamily = Settings.LyricFont.value.replace(/:/g, ' ') + ", sans-serif";
         }
         else {
-            SetOldFont(Lyric, Settings.LyricFont.value);
+            SetOldFont(LyricObject, Settings.LyricFont.value);
         }
     }
     if (Settings.LyricFontDir) {
         if (Settings.LyricFontDir.value) {
-            Lyric.style.fontFamily = "'Custom-eV', sans-serif";
+            LyricObject.style.fontFamily = "'Custom-eV', sans-serif";
             SetFontCustom(Settings.LyricFontDir.value, 'Custom-eV');
         }
     }
@@ -56,7 +56,7 @@ var LyricSettings = function (Settings) {
     }
     if (Settings.LyricSize) {
         var s = Settings.LyricSize.value;
-        Lyric.style.fontSize = Math.floor(g_Height / 500 * s) + 'px';
+        LyricObject.style.fontSize = Math.floor(g_Height / 500 * s) + 'px';
         document.body.style.setProperty('--lyric_size', (s / 100) + 'vmax');
     }
     if (Settings.LyricColor) {
@@ -65,7 +65,7 @@ var LyricSettings = function (Settings) {
                 return Math.ceil(c * 255);
             }
         );
-        Lyric.style.color = LyricColor = 'rgb(' + c + ')';
+        LyricObject.style.color = LyricColor = 'rgb(' + c + ')';
         document.body.style.setProperty('--lyric_color', LyricColor);
     }
     if (Settings.LyricBlurColor) {
@@ -74,13 +74,13 @@ var LyricSettings = function (Settings) {
                 return Math.ceil(c * 255);
             }
         );
-        Lyric.style.textShadow = LyricBlurColor = '0 0 20px rgb(' + c + ')';
+        LyricObject.style.textShadow = LyricBlurColor = '0 0 20px rgb(' + c + ')';
         LyricSettingsObject.Blur = 'rgb(' + c + ')';
         document.body.style.setProperty('--lyric_blur', LyricSettingsObject.Blur);
     }
     if (Settings.LyricPositionX) {
         LyricPositionX = Settings.LyricPositionX.value;
-        Lyric.style.left = LyricPositionX - 50 + LyricSettingsObject.AlignPX + '%';
+        LyricObject.style.left = LyricPositionX - 50 + LyricSettingsObject.AlignPX + '%';
         document.body.style.setProperty(
             '--lyric_pos',
             LyricPositionX + (LyricPositionX * (((window.innerWidth / 64) / 100) * 2)) - (window.innerWidth / 64) + '% ' + (LyricPositionY - (LyricPositionY * 0.04) + 2) + '%'
@@ -88,7 +88,7 @@ var LyricSettings = function (Settings) {
     }
     if (Settings.LyricPositionY) {
         LyricPositionY = Settings.LyricPositionY.value;
-        Lyric.style.top = LyricPositionY - 50 + '%';
+        LyricObject.style.top = LyricPositionY - 50 + '%';
         document.body.style.setProperty(
             '--lyric_pos',
             LyricPositionX + (LyricPositionX * (((window.innerWidth / 64) / 100) * 2)) - (window.innerWidth / 64) + '% ' + (LyricPositionY - (LyricPositionY * 0.04) + 2) + '%'
@@ -96,15 +96,15 @@ var LyricSettings = function (Settings) {
     }
     if (Settings.LyricOpacity) {
         LyricOpacity = Settings.LyricOpacity.value / 100;
-        Lyric.style.opacity = LyricOpacity;
+        LyricObject.style.opacity = LyricOpacity;
     }
 }
 
 function SetShowLyric(IsShow) {
     if (IsShow) {
-        Lyric.style.display = 'block';
+        LyricObject.style.display = 'block';
     }
     else {
-        Lyric.style.display = 'none';
+        LyricObject.style.display = 'none';
     }
 }

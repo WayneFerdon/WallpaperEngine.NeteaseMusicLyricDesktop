@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 00:43:33
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-11-15 00:12:13
+# LastEditTime: 2023-11-15 00:22:50
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\Debug.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -84,7 +84,9 @@ class Debug():
         if isDisplayTime is None:
             isDisplayTime = level.isDisplayTime
         
-        logInfo = " ".join(infos)
+        logInfo = str()
+        for info in infos:
+            logInfo += str(info) + " "
 
         timeZone = str()
         if isDisplayTime:

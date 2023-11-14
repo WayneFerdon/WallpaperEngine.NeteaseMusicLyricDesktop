@@ -97,6 +97,7 @@ video {
 	transition: .6s;
 }
 
+
 #Netease {
 	position: absolute;
 	left: 0;
@@ -108,6 +109,14 @@ video {
 	z-index: 90;
 	transition: .6s;
 	transform: translate(0%, 50%);
+}
+
+#NeteaseData {
+	opacity: 0;
+}
+
+.LyricEmpty {
+	opacity: 0;
 }
 
 .Lyric0 {

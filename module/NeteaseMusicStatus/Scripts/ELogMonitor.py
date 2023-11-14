@@ -174,10 +174,10 @@ class ELogMonitor(Singleton, LoopObject):
         
         # update last known position
         if logType in [LogType.SeekPos, LogType.Resume]:
-            DisplayManager.Instance.OutputCurrentLyric(True)
+            DisplayManager.Instance.OutputCurrentStateAndLyric()
         # clear output
         if logType == LogType.AppExit:
-            DisplayManager.WriteOutput("")
+            DisplayManager.WriteOutput(EXIT_STATE_OUTPUT)
 
     def GetLogInfoWithTime(self, content:str):
         year = str(self.LastUpdate.year)

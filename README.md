@@ -1,9 +1,9 @@
 <!--
  * @Author: wayneferdon wayneferdon@hotmail.com
  * @Date: 2021-08-17 01:45:17
- * @LastEditors: wayneferdon wayneferdon@hotmail.com
- * @LastEditTime: 2022-08-25 13:49:28
- * @FilePath: \undefinede:\SteamLibrary\steamapps\common\wallpaper_engine\projects\myprojects\bg\README.md
+ * @LastEditors: WayneFerdon wayneferdon@hotmail.com
+ * @LastEditTime: 2023-11-14 08:47:10
+ * @FilePath: \undefinede:\SteamLibrary\steamapps\common\wallpaper_engine\projects\myprojects\NeteaseMusic\README.md
  * ----------------------------------------------------------------
  * Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
  * Licensed to the .NET Foundation under one or more agreements.
@@ -48,10 +48,6 @@ JavaScript: Insert the generated html block into the wallpaper
     if not exist, copy it from
     > ./module/NeteaseMusicStatus/Scripts/hook-pykakasi.py
 3. Run ./module/NeteaseMusicStatus/Complie.bat
-
-## Notes
-
-Since the cloudmusic.log file is now changed to the new cloudmusic.elog, as well as using a new and unknow encoding. Currently some relation has been tried and works fine, yet if anyone knows what encoding the new log version is using may comment in [Issue #1](https://github.com/wayneferdon/WallpaperEngine.NeteaseMusicLyricDesktop/issues/1)
 
 ---
 Inspire by [another similar method on OS X by Jamesits](https://github.com/Jamesits/Netease-music-status)

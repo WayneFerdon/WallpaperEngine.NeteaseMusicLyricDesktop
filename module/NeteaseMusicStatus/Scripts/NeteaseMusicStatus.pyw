@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-08-26 14:44:48
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-10-28 06:25:46
+# LastEditTime: 2023-11-14 02:31:19
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\NeteaseMusicStatus.pyw
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -25,7 +25,7 @@ def Main():
     Debug.LEVEL.LOWEST.alias = "ELOG_LOW"
     Debug.LEVEL.LOW.alias = "ELOG"
     Debug.LEVEL.HIGH.alias = "ELOG"
-    Debug.LEVEL.LOWEST.enabled = False
+    Debug.LEVEL.LOWEST.enabled = True
     Debug.LEVEL.HIGH.isWarp = True
     Debug.LEVEL.LOW.isWarp = True
     Debug.LEVEL.LOWEST.isWarp = True

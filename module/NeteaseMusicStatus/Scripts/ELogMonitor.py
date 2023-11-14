@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 02:30:29
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-10-28 05:52:17
+# LastEditTime: 2023-11-14 08:41:19
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\ELogMonitor.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -17,7 +17,7 @@ import traceback
 import json
 from CharaterMethods import *
 from Constants import *
-from ELogEncoding import *
+# from ELogEncoding import *
 from DisplayManager import DisplayManager
 from Debug import Debug
 from Singleton import Singleton
@@ -42,21 +42,19 @@ class LogType(PropertyEnum):
 
     @classmethod
     def __init_properties__(cls) -> None:
-        cls.Play.method =  ELogMonitor.Instance.OnPlay
+        cls.AppExit.key = "App exit."
+        cls.Play.key = "\"setPlaying\""
+        # cls.Load.key = "Load:" # now being handled in LogType.Play
+        cls.SeekPos.key = "OnSeek"
+        cls.Resume.key = "|resume|"
+        cls.Pause.key = "|pause|"
+
         cls.AppExit.method = ELogMonitor.Instance.OnAppExit
         cls.Play.method = ELogMonitor.Instance.OnPlay
-        cls.Load.method = ELogMonitor.Instance.OnLoadDuration
+        # cls.Load.method = ELogMonitor.Instance.OnLoadDuration
         cls.SeekPos.method = ELogMonitor.Instance.OnSeekPosition
         cls.Resume.method = ELogMonitor.Instance.OnResume
         cls.Pause.method = ELogMonitor.Instance.OnPause
-
-        cls.AppExit.key = "App exit."
-        cls.Play.key = "player._$play"
-        cls.Load.key = "??? __onAudioPlayerLoad"
-        cls.SeekPos.key = "OnSeek"
-        cls.Resume.key = "??? player._$resume do"
-        cls.Pause.key = "??? player._$pause do"
-        
         return super().__init_properties__()
 
 class ELogMonitor(Singleton, LoopObject):
@@ -79,7 +77,7 @@ class ELogMonitor(Singleton, LoopObject):
             if not self.CheckFileSize():
                 self.ReloadLogFile()
             self.Analysis()
-            if LyricManager.Song and LyricManager.SongLength:
+            if LyricManager.Song and LyricManager.SongDuration:
                 break
             if self.SeekOffset >= self.FileSize:
                 break
@@ -118,24 +116,27 @@ class ELogMonitor(Singleton, LoopObject):
     
     def GetLastestLines(self) -> list[str]:
         lines = (b"\n").join(self.LogFile.readlines())
-        decoded, newEncode = self.Decode(lines)
-        decoded = RemoveAll(decoded.split("\n"), "")
-        if len(newEncode) == 0:
-            return decoded
-        if self.IsInitializing:
-            return decoded
-        Debug.LogAlert('------------------------------------------------------')
-        Debug.LogAlert('UNKNOW ENCODES FOUND----------------------------------')
-        Debug.LogAlert('new encodes: ', newEncode)
-        Debug.LogAlert('------------------------------------------------------')
-        for line in decoded:
-            for code in decoded:
-                if str(code) not in line:
-                    continue
-                print(line)
-                break
-        Debug.LogAlert('END UNKNOW ENCODES FOUND------------------------------')
+        decoded = self.Decode(lines)
+        decoded = decoded.split("\n")
         return decoded
+        # decoded, newEncode = self.Decode(lines)
+        # decoded = RemoveAll(decoded.split("\n"), "")
+        # if len(newEncode) == 0:
+        #     return decoded
+        # # if self.IsInitializing:
+        # #     return decoded
+        # Debug.LogWarning('------------------------------------------------------')
+        # Debug.LogWarning('UNKNOW ENCODES FOUND----------------------------------')
+        # Debug.LogWarning('new encodes: ', newEncode)
+        # Debug.LogWarning('------------------------------------------------------')
+        # for line in decoded:
+        #     for code in decoded:
+        #         if str(code) not in line:
+        #             continue
+        #         print(line)
+        #         break
+        # Debug.LogWarning('END UNKNOW ENCODES FOUND------------------------------')
+        # return decoded
 
     def CheckFileSize(self):
         if not self.LogFile:
@@ -179,16 +180,17 @@ class ELogMonitor(Singleton, LoopObject):
             DisplayManager.WriteOutput("")
 
     def GetLogInfoWithTime(self, content:str):
-        if "[info]" in content:
-            time, info =  re.split("\\[info]", content.strip().strip("\n"))
-            time = re.split("\\[(.*?)]", time)
-            time = datetime.strptime(time[3], "%Y-%m-%dT%H:%M:%S.%f%z")
-            return time, info
-        time = str(self.LastUpdate.year)
-        time += re.split(":", re.split("\\[(.*?)]", content)[1])[2]
-        time += ".000001"
-        time = datetime.strptime(time, "%Y%m%d/%H%M%S.%f").astimezone()
-        return time, None
+        year = str(self.LastUpdate.year)
+        splited = re.split(":", content.strip().strip("\n"))
+        # unknow_1, unknow_2, dateAndTime, floatsecond(9digit), "INFO", *info
+        _, _, time, ms, _ = splited[:5]
+        info = ":".join(splited[5:])
+        if "INFO" not in splited:
+            ms = "000001"
+            Debug.LogError(splited)
+        time = "{}-{}-{}:{}:{}.{}".format(year, time[:2], time[2:7],time[7:9],time[9:], ms[:-3])
+        time = datetime.strptime(time, "%Y-%m-%d/%H:%M:%S.%f").astimezone()
+        return time, info
 
     def OnAppExit(self, content:str) -> LogType:
         if DisplayManager.Instance.PlayState == PLAY_STATE.PLAYING:
@@ -200,7 +202,8 @@ class ELogMonitor(Singleton, LoopObject):
         self.LastUpdate = time
         Debug.LogHighest("App Exit", logTime=time)
         return True
-    
+
+
     def OnSeekPosition(self, content:str):
         time, _ = self.GetLogInfoWithTime(content)
         DisplayManager.Instance.LastPosition = float(content.split('OnSeek pos:')[1])
@@ -219,11 +222,12 @@ class ELogMonitor(Singleton, LoopObject):
             if state.method(content):
                 return state
         if not self.IsInitializing:
-            if "_p._$$Player" in  content:
+            if "INFO:audio_player.cpp" in  content or "INFO:audioplayer.cpp" in  content:
                 Debug.LogLow(content)
             else:
                 Debug.LogLowest(content)
         return LogType.Undefined
+
 
     def GetInfoLog(self, content:str) -> tuple[datetime, str]:
         time, info = self.GetLogInfoWithTime(content)
@@ -238,7 +242,10 @@ class ELogMonitor(Singleton, LoopObject):
         time, info = self.GetInfoLog(content)
         if not info:
             return False
-        LyricManager.Song = str(re.split("_", re.split("\"", info)[1])[0])
+        songJson = info.split(",\"setPlaying\",")[1]
+        dic = json.loads(songJson)
+        LyricManager.Song = dic["trackIn"]["id"]
+        LyricManager.SongDuration = dic["trackIn"]["track"]["duration"]
         if not self.IsInitializing:
             LyricManager.PrepareLyric()
             LyricManager.LastSyncAttemp = None
@@ -248,18 +255,20 @@ class ELogMonitor(Singleton, LoopObject):
         # require load and resume next
         DisplayManager.Instance.PlayState = PLAY_STATE.STOPPED
         Debug.LogHighest("Play song:", LyricManager.Song, logTime=time)
+        Debug.LogHighest("Song Suration:", LyricManager.SongDuration, logTime=time)
         return True
 
-    def OnLoadDuration(self, content:str):
-        time, info  = self.GetInfoLog(content)
-        if not info:
-            return False
-        Debug.LogHighest("Load Duration of {}:".format(LyricManager.Song), LyricManager.SongLength, logTime=time)
-        if not LyricManager.Song:
-            return False
-        LyricManager.SongLength = float(json.loads(
-            re.split("\t", info)[0])["duration"])
-        return True
+    # now can load in OnPlay()"
+    # def OnLoadDuration(self, content:str):
+    #     time, info  = self.GetInfoLog(content)
+    #     if not info:
+    #         return False
+    #     Debug.LogHighest("Load Duration of {}:".format(LyricManager.Song), LyricManager.SongDuration, logTime=time)
+    #     if not LyricManager.Song:
+    #         return False
+    #     LyricManager.SongDuration = float(json.loads(
+    #         re.split("\t", info)[0])["duration"])
+    #     return True
 
     def OnResume(self, content:str):
         time, info = self.GetInfoLog(content)
@@ -285,34 +294,49 @@ class ELogMonitor(Singleton, LoopObject):
 
     @staticmethod
     def Decode(datas:list[bytes]) -> list[str]:
-        newCodes, exclusiveNew = list[bytes](), list[bytes]()
-        strings = list[str]()
-        keys = ENCODING.keys()
-        encode, inLong = SPCEncode.UNKNOW, list[str]()
+        # decode data from .elog file encoding to utf-8
+        decoded = bytes()
         for data in datas:
-            # encode special encode
-            if encode.size + 2 > len(inLong):
-                inLong.append(str(data))
-                if encode.size + 2 == len(inLong):
-                    encoded = "【{}】".format('_'.join(inLong))
-                    if encode.known and encoded in encode.known.keys():
-                        encoded = encode.known[encoded]
-                    strings.append(encoded)
-                continue
-            # check if it's special encode
-            encode = SPCEncode.GetByCode(data)
-            if encode is not SPCEncode.UNKNOW:
-                inLong = [encode.name, str(data)]
-                continue
-            # known encodes
-            if data in keys:
-                strings.append(ENCODING[data])
-                continue
-            # unknown encodes
-            strings.append("【" + str(data) + "】")
-            if data in newCodes:
-                continue
-            if data in exclusiveNew:
-                continue
-            newCodes.append(data)
-        return "".join(strings), newCodes
+            onesDigit = 4*(int(int(data/16)/4)+1)-(int(int(data/16) % 4))-1
+            b_2 = (1-(int(onesDigit)%2))*(int(data)%2)*2
+            b_4 = (1-(int(onesDigit/2)%2))*((int(data/2)%2))*4
+            b_8 = ((int(onesDigit/4)%2))*((int(data/4)%2))*8
+            hexsDigit = ((((int(data/16)+8)%16+(data%16))%16)-b_2-b_4-b_8)%16
+            byte = hexsDigit*16+onesDigit
+            decoded += int(byte).to_bytes()
+        return decoded.decode(encoding="utf-8")
+        # newCodes, exclusiveNew = list[bytes](), list[bytes]()
+        # strings = list[str]()
+        # keys = ENCODING.keys()
+        # Debug.LogError(newDatas)
+        #     # b = 
+        # encode, inLong = SPCEncode.UNKNOW, list[str]()
+        # for data in datas:
+        #     # encode special encode
+        #     if encode.size + 2 > len(inLong):
+        #         inLong.append(str(data))
+        #         if encode.size + 2 == len(inLong):
+        #             encoded = "【{}】".format('_'.join(inLong))
+        #             if encode.known and encoded in encode.known.keys():
+        #                 encoded = encode.known[encoded]
+        #             elif encoded not in newCodes:
+        #                 newCodes.append(encoded)
+        #             strings.append(encoded)
+        #         continue
+        #     # check if it's special encode
+        #     encode = SPCEncode.GetByCode(data)
+        #     if encode is not SPCEncode.UNKNOW:
+        #         inLong = [encode.name, str(data)]
+        #         continue
+        #     # known encodes
+        #     if data in keys:
+        #         strings.append(ENCODING[data])
+        #         continue
+        #     # unknown encodes
+        #     strings.append("【" + str(data) + "】")
+        #     if data in newCodes:
+        #         continue
+        #     if data in exclusiveNew:
+        #         continue
+        #     newCodes.append(data)
+        # return "".join(strings), newCodes

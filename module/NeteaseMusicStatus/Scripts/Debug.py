@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 00:43:33
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-10-28 06:24:46
+# LastEditTime: 2023-11-14 01:48:44
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\Debug.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -14,6 +14,7 @@
 import ctypes
 from PropertyEnum import *
 from datetime import datetime
+import os
 
 # region log display switch
 ENABLE_ELOG_DISPLAY = True
@@ -66,6 +67,10 @@ class Debug():
                 level.enabled = True
                 level.isWarp = False
             return super().__init_properties__()
+
+    @staticmethod
+    def Pause():
+        os.system("pause")
 
     @staticmethod
     def OnLog(level:LEVEL, infos:str, type:int, logTime:datetime=None) -> str:

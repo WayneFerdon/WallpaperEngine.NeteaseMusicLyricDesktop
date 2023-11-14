@@ -50,7 +50,7 @@ class LyricManager(Singleton, LoopObject):
         LyricManager.Timeline = list[float]()
         LyricManager.Song = None
         LyricManager.Lyric = dict()
-        LyricManager.SongLength = 0.0
+        LyricManager.SongDuration = 0.0
         LyricManager.__LocalMusicInfo__ = None
         LyricManager.__Hanzi2KanjiLib__ = None
         LyricManager.__Kakasi__ = None

@@ -2,7 +2,7 @@
 # Author: WayneFerdon wayneferdon@hotmail.com
 # Date: 2023-04-11 19:55:43
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-11-20 09:18:01
+# LastEditTime: 2023-11-20 10:39:05
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\LyricManager.py
 # ----------------------------------------------------------------
 # Copyright (c) 2023 by Wayne Ferdon Studio. All rights reserved.
@@ -305,7 +305,8 @@ class LyricManager(Singleton, LoopObject):
         else:
             if not trans:
                 trans = ""
-            result["-inf"] = f"{songName}\t{artists}", f"{trans}\t{artistTrans}"
+            result["-inf"] = "", ""
+            result["-1"] = f"{songName}\t{artists}", f"{trans}\t{artistTrans}"
         return result
     
     @staticmethod
@@ -506,6 +507,7 @@ class LyricManager(Singleton, LoopObject):
                 cls.Synced = True
                 Debug.Log("Sync lyric online succeed")
             result.update(songInfo)
+            result["inf"] = "", ""
             return result
         if isOnline:
             Debug.Log("Sync lyric online failed")

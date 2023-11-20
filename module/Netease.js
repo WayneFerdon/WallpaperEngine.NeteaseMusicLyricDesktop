@@ -2,7 +2,7 @@
  * @Author: wayneferdon wayneferdon@hotmail.com
  * @Date: 2021-08-17 01:45:21
  * @LastEditors: WayneFerdon wayneferdon@hotmail.com
- * @LastEditTime: 2023-11-20 09:35:23
+ * @LastEditTime: 2023-11-20 10:38:16
  * @FilePath: \NeteaseMusic\module\Netease.js
  * ----------------------------------------------------------------
  * Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -52,7 +52,7 @@ function UpdateLyric(current) {
         case 0: // paused
             break;
         case 1: // playing
-            currentTime += Date.parse(new Date()) - current["lastResume"] * 1000
+            currentTime += Math.max(0, new Date() - current["lastResume"] * 1000)
             break
         case 2: // app exit
             DisplayLyric(currentLyric)
@@ -78,9 +78,9 @@ function UpdateLyric(current) {
         return a - b
     })
 
-    keyTimes = [null, null, null]
+    keyTimes = [-Infinity, -1, 0]
     for (var key in TimeKeys) {
-        if (TimeKeys[key] > currentTime) {
+        if (TimeKeys[key] >= currentTime) {
             keyTimes[0] = TimeKeys[key - 2]
             keyTimes[1] = TimeKeys[key - 1]
             keyTimes[2] = TimeKeys[key]

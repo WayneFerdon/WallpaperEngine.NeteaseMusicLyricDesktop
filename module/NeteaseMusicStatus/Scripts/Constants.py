@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 00:50:50
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-11-15 02:58:54
+# LastEditTime: 2023-11-20 06:00:18
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\Constants.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -35,12 +35,10 @@ TEMP_DATABASE = os.path.join(TEMP_DIR, "index.dat")
 TEMP_DATABASE_CURSER_KEY = "SELECT path, type FROM cache"
 
 CACHE_DIR = '../cache/'
-LYRIC_OUTPUT = "../CurrentLyric.html"
 STATE_OUTPUT = "../CurrentState.html"
 KANJI_LIB = "Hanzi2Kanji.json"
 
 EMPTY_LYRIC = {"Lyric": "", "Translation": ""}
-NULL_LYRIC = {0.0 :{"Lyric": "无歌词", "Translation": ""}}
 RELOAD_ATTEMPT = 10
 EXIT_STATE_OUTPUT = json.dumps({"state":2})
 

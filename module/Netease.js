@@ -2,7 +2,7 @@
  * @Author: wayneferdon wayneferdon@hotmail.com
  * @Date: 2021-08-17 01:45:21
  * @LastEditors: WayneFerdon wayneferdon@hotmail.com
- * @LastEditTime: 2023-11-15 04:58:44
+ * @LastEditTime: 2023-11-20 09:35:23
  * @FilePath: \NeteaseMusic\module\Netease.js
  * ----------------------------------------------------------------
  * Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -19,7 +19,7 @@ var LyricBlurColor
 var LyricObject = document.getElementById("Netease");
 var LastSong = -1
 var LastSync = -1
-var SongLyric
+var TimeKeys = []
 
 function LyricInit() {
     LyricObject.style.width = g_Width + 'px';
@@ -34,6 +34,14 @@ function LyricUpdate() {
     $('#NeteaseState').load('module/NeteaseMusicStatus/CurrentState.html');
     current = JSON.parse($('#NeteaseState').html())
     UpdateLyric(current)
+}
+
+function Debug(info) {
+    $('#Debug').html(info)
+}
+
+function Log(log) {
+    $('#Debug').html($('#Debug').html() + "<div id=\"Debug\">" + log + "</div>")
 }
 
 function UpdateLyric(current) {
@@ -56,43 +64,49 @@ function UpdateLyric(current) {
     var song = current["song"]
     if (song != LastSong | current["lastSync"] != LastSync) {
         $('#NeteaseLyric').load("module/NeteaseMusicStatus/cache/" + song + ".json");
-        SongLyric = JSON.parse($('#NeteaseLyric').html())
+        LastSong = song
+        LastSync = current["lastSync"]
     }
-    var keyTimes = [null, null, null]
+    var SongLyric = JSON.parse($('#NeteaseLyric').html())
+    var TimeKeys = []
+    i = 0
     for (var key in SongLyric) {
-        if (key > currentTime) {
-            if (key == 0) {
-                keyTimes[0] = null
-                keyTimes[1] = key
-                continue
-            }
-            keyTimes[2] = key
+        TimeKeys[i] = key;
+        i += 1;
+    }
+    TimeKeys = TimeKeys.sort(function (a, b) {
+        return a - b
+    })
+
+    keyTimes = [null, null, null]
+    for (var key in TimeKeys) {
+        if (TimeKeys[key] > currentTime) {
+            keyTimes[0] = TimeKeys[key - 2]
+            keyTimes[1] = TimeKeys[key - 1]
+            keyTimes[2] = TimeKeys[key]
             break
         }
-        keyTimes[0] = keyTimes[1]
-        keyTimes[1] = key
     }
-
     for (var i in keyTimes) {
         time = keyTimes[i]
-        if (time != null) {
-            currentLyric[i] = SongLyric[time]
+        if (time == null) {
+            continue
         }
+        currentLyric[i] = SongLyric[time]
     }
     DisplayLyric(currentLyric)
 }
 
 function DisplayLyric(currentLyric) {
-    // $("#NeteaseDebug").html(JSON.stringify(currentLyric))
     var display = ""
     for (var i in currentLyric) {
         for (var key in currentLyric[i]) {
             line = currentLyric[i][key]
             if (line == null | line == "") {
-                line = "<div class=\"LyricEmpty\">\n...</div > "
+                line = "<div class=\"LyricEmpty\">...</div > "
             }
             display += "<div class= " + key + i + ">" + line + "</div>"
-            display += "\n"
+            // display += "\n"
         }
     }
     $('#NeteaseDisplay').html(display)

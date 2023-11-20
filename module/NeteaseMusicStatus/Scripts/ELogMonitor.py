@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 02:30:29
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-11-14 09:20:38
+# LastEditTime: 2023-11-20 07:47:02
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\ELogMonitor.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -96,7 +96,8 @@ class ELogMonitor(Singleton, LoopObject):
             self.InitializeLog()
 
     def Analysis(self):
-        lastest = self.GetLastestLines()
+        lines = (b"\n").join(self.LogFile.readlines())
+        lastest = self.Decode(lines).split("\n")
         new = list[str]()
         while len(lastest) > 0:
             line = lastest.pop()
@@ -113,30 +114,6 @@ class ELogMonitor(Singleton, LoopObject):
                 self.AnalysisLog(line)
             except Exception:
                 Debug.LogError(traceback.format_exc())
-    
-    def GetLastestLines(self) -> list[str]:
-        lines = (b"\n").join(self.LogFile.readlines())
-        decoded = self.Decode(lines)
-        decoded = decoded.split("\n")
-        return decoded
-        # decoded, newEncode = self.Decode(lines)
-        # decoded = RemoveAll(decoded.split("\n"), "")
-        # if len(newEncode) == 0:
-        #     return decoded
-        # # if self.IsInitializing:
-        # #     return decoded
-        # Debug.LogWarning('------------------------------------------------------')
-        # Debug.LogWarning('UNKNOW ENCODES FOUND----------------------------------')
-        # Debug.LogWarning('new encodes: ', newEncode)
-        # Debug.LogWarning('------------------------------------------------------')
-        # for line in decoded:
-        #     for code in decoded:
-        #         if str(code) not in line:
-        #             continue
-        #         print(line)
-        #         break
-        # Debug.LogWarning('END UNKNOW ENCODES FOUND------------------------------')
-        # return decoded
 
     def CheckFileSize(self):
         if not self.LogFile:
@@ -246,29 +223,17 @@ class ELogMonitor(Singleton, LoopObject):
         dic = json.loads(songJson)
         LyricManager.Song = dic["trackIn"]["trackId"]
         LyricManager.SongDuration = dic["trackIn"]["track"]["duration"]
+        LyricManager.Synced = False
         if not self.IsInitializing:
             LyricManager.PrepareLyric()
             LyricManager.LastSyncAttemp = None
         if DisplayManager.Instance.PlayState != PLAY_STATE.EXITED:
             DisplayManager.Instance.LastPosition = 0.0
-        DisplayManager.Instance.NextLyricTime = 0.0
         # require load and resume next
         DisplayManager.Instance.PlayState = PLAY_STATE.STOPPED
         Debug.LogHighest("Play song:", LyricManager.Song, logTime=time)
         Debug.LogHighest("Song Suration:", LyricManager.SongDuration, logTime=time)
         return True
-
-    # now can load in OnPlay()"
-    # def OnLoadDuration(self, content:str):
-    #     time, info  = self.GetInfoLog(content)
-    #     if not info:
-    #         return False
-    #     Debug.LogHighest("Load Duration of {}:".format(LyricManager.Song), LyricManager.SongDuration, logTime=time)
-    #     if not LyricManager.Song:
-    #         return False
-    #     LyricManager.SongDuration = float(json.loads(
-    #         re.split("\t", info)[0])["duration"])
-    #     return True
 
     def OnResume(self, content:str):
         time, info = self.GetInfoLog(content)
@@ -287,56 +252,19 @@ class ELogMonitor(Singleton, LoopObject):
         
         if DisplayManager.Instance.PlayState == PLAY_STATE.PLAYING:
             DisplayManager.Instance.LastPosition += time.timestamp() - DisplayManager.Instance.LastResume
-            self.LastPauseTime = time.timestamp()
         DisplayManager.Instance.PlayState = PLAY_STATE.STOPPED
         Debug.LogHighest("Pause", DisplayManager.Instance.LastPosition, logTime=time)
         return True
 
     @staticmethod
-    def Decode(datas:list[bytes]) -> list[str]:
+    def Decode(datas:list[bytes]) -> str:
         # decode data from .elog file encoding to utf-8
         decoded = bytes()
         for data in datas:
-            onesDigit = 4*(int(int(data/16)/4)+1)-(int(int(data/16) % 4))-1
-            b_2 = (1-(int(onesDigit)%2))*(int(data)%2)*2
-            b_4 = (1-(int(onesDigit/2)%2))*((int(data/2)%2))*4
-            b_8 = ((int(onesDigit/4)%2))*((int(data/4)%2))*8
-            hexsDigit = ((((int(data/16)+8)%16+(data%16))%16)-b_2-b_4-b_8)%16
-            byte = hexsDigit*16+onesDigit
-            decoded += int(byte).to_bytes()
+            # data = abcdefgh
+            # hexsDigit = (!a^e)(bcd^fgh)
+            hexsDigit = ((data//16) ^ (data%16)+8)%16
+            # bytesData = (!a^e)(bcd^fgh) (a)(b) (!c)(!d)
+            bytesData = hexsDigit*16 + data//64*4 + ~(data//16)%4
+            decoded += int(bytesData).to_bytes()
         return decoded.decode(encoding="utf-8")
-        # newCodes, exclusiveNew = list[bytes](), list[bytes]()
-        # strings = list[str]()
-        # keys = ENCODING.keys()
-        # Debug.LogError(newDatas)
-        #     # b = 
-        # encode, inLong = SPCEncode.UNKNOW, list[str]()
-        # for data in datas:
-        #     # encode special encode
-        #     if encode.size + 2 > len(inLong):
-        #         inLong.append(str(data))
-        #         if encode.size + 2 == len(inLong):
-        #             encoded = "【{}】".format('_'.join(inLong))
-        #             if encode.known and encoded in encode.known.keys():
-        #                 encoded = encode.known[encoded]
-        #             elif encoded not in newCodes:
-        #                 newCodes.append(encoded)
-        #             strings.append(encoded)
-        #         continue
-        #     # check if it's special encode
-        #     encode = SPCEncode.GetByCode(data)
-        #     if encode is not SPCEncode.UNKNOW:
-        #         inLong = [encode.name, str(data)]
-        #         continue
-        #     # known encodes
-        #     if data in keys:
-        #         strings.append(ENCODING[data])
-        #         continue
-        #     # unknown encodes
-        #     strings.append("【" + str(data) + "】")
-        #     if data in newCodes:
-        #         continue
-        #     if data in exclusiveNew:
-        #         continue
-        #     newCodes.append(data)
-        # return "".join(strings), newCodes

@@ -97,6 +97,10 @@ video {
 	transition: .6s;
 }
 
+#Debug {
+	color: #fff;
+	font-size: 20px;
+}
 
 #Netease {
 	position: absolute;

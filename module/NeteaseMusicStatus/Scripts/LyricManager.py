@@ -2,7 +2,7 @@
 # Author: WayneFerdon wayneferdon@hotmail.com
 # Date: 2023-04-11 19:55:43
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-11-15 04:52:23
+# LastEditTime: 2023-11-20 09:18:01
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\LyricManager.py
 # ----------------------------------------------------------------
 # Copyright (c) 2023 by Wayne Ferdon Studio. All rights reserved.
@@ -24,6 +24,81 @@ from pyncm.apis import track
 from Debug import Debug
 from collections.abc import Callable
 
+def TryGetValueFromKeys(data:dict,keys:list):
+    for key in keys:
+        if key not in data.keys():
+            continue
+        return data[key]
+
+def FormatMultiInfos(infos:list):
+    if type(infos) is not list:
+        return infos
+    if len(infos) == 0:
+        return None
+    result = infos[0]
+    if len(infos) > 1:
+        result += "({})".format((",".join(infos[1:])))
+    return result
+
+class Lyric(dict[str, str]):
+    def __init__(self, lyric:str|tuple|dict, translation:str=None):
+        if type(lyric) is tuple:
+            if len(tuple(lyric)) > 2:
+                raise ValueError("Too much data for lyric")
+            if translation:
+                raise ValueError("Too much data for lyric")
+            lyric, translation = lyric
+        if type(lyric) is dict:
+            if lyric["Translation"]:
+                if translation:
+                    raise ValueError("Too much data for lyric")
+                translation = lyric["Translation"]
+            lyric = lyric["Lyric"]
+        self["Lyric"] = lyric
+        self["Translation"] = translation
+        return super().__init__()
+    
+    @property
+    def lyric(self)->str:
+        return self["Lyric"]
+
+    @property
+    def translation(self)->str:
+        return self["Translation"]
+    
+    @lyric.setter
+    def lyric(self, value:str):
+        self["Lyric"] = value
+
+    @translation.setter
+    def translation(self, value:str):
+        self["Translation"] = value
+
+class SongLyric(dict[float, Lyric]):
+    def __init__(self, source:dict=None):
+        if source:
+            self.update(source)
+        return super().__init__()
+
+    def update(self, source:dict):
+        for key in source:
+            self[key] = source[key]
+        return
+
+    def __getitem__(self, __key: float|str) -> Lyric:
+        return super().__getitem__(float(__key))
+
+    def __setitem__(self, __key: float|str, __value: Lyric|tuple|dict) -> None:
+        if type(__value) in [str, tuple, dict]:
+            if type(__value) is str:
+                __value = json.loads(__value)
+            lyric = Lyric(__value)
+        elif type(__value) is Lyric:
+            lyric = __value
+        else:
+            raise TypeError("Trying to set wrong type to Lyric object")
+        return super().__setitem__(float(__key), lyric)
+
 class LyricManager(Singleton, LoopObject):
     class LyricSource(PropertyEnum):
         InfoOnly=-1
@@ -33,7 +108,7 @@ class LyricManager(Singleton, LoopObject):
         WebCache=3
 
         @enumproperty
-        def getLyric(self) -> Callable[[], dict[float, dict[str, str]]]: ...
+        def getLyric(self) -> Callable[[], SongLyric]: ...
 
         @classmethod
         def __init_properties__(cls) -> None:
@@ -49,7 +124,7 @@ class LyricManager(Singleton, LoopObject):
         super().__init__()
         LyricManager.Timeline = list[float]()
         LyricManager.Song = None
-        LyricManager.Lyric = dict()
+        LyricManager.Lyric = None
         LyricManager.SongDuration = 0.0
         LyricManager.__LocalMusicInfo__ = None
         LyricManager.__Hanzi2KanjiLib__ = None
@@ -57,6 +132,13 @@ class LyricManager(Singleton, LoopObject):
         LyricManager.Synced = False
         LyricManager.LastSyncAttemp = None
         LyricManager.LastCache = 0
+
+    def OnStart(self):
+        super().OnStart()
+        if not self.Song:
+            return
+        self.PrepareLyric()
+        self.LastSyncAttemp = None
 
     def OnUpdate(self):
         super().OnUpdate()
@@ -112,12 +194,16 @@ class LyricManager(Singleton, LoopObject):
         songData = dict[str, list[str]]()
         for title, result in results:
             try:
-                data = json.loads(result[0][6:])
+                if not result or result == "":
+                    continue
+                result = result.removeprefix('music:')
+                data = json.loads(result)
                 data['name'] = title
             except Exception:
                 Debug.LogError(traceback.format_exc())
                 continue
-            id = str(data['musicId'])
+            idKeys = ['id', 'musicId']
+            id = TryGetValueFromKeys(songData, idKeys)
             songData[str(id)] = data
         return songData
     
@@ -168,39 +254,58 @@ class LyricManager(Singleton, LoopObject):
                 Debug.LogError(traceback.format_exc())
                 pass
         return timeline
-    
+
     @staticmethod
-    def FormatInfoOnlyLyric(songInfo:dict) -> dict[float, dict[str, str]]:
-        name, trans, artists = songInfo['name'], "", ""
-        tnsKeys = ['translate', 'tns']
-        arKeys = ["artists", 'ar']
-
-        for key in tnsKeys:
-            if key not in songInfo.keys():
-                continue
-            trans = songInfo[key]
-            break
-        for key in arKeys:
-            if key not in songInfo.keys():
-                continue
-            artists = list[str](songInfo[key])
-            break
+    def GetFormatedArtists(artists:list[dict]):
         if len(artists) == 0:
-            return None
+            return "", ""
+        nameList = list()
+        translationList = list()
+        for artist in artists:
+            name = artist["name"]
+            if "alias" in artist.keys():
+                alias = FormatMultiInfos(artist["alias"])
+                if alias:
+                    name += f"({alias})"
+            nameList.append(name)
+            if "tns" in artist.keys():
+                translation = FormatMultiInfos(artist["tns"])
+            if not translation:
+                translation = name
+            translationList.append(translation)
+        
+        names = "by: " + " / ".join(nameList)
+        translations = "by: " + " / ".join(translationList)
+        return names, translations
 
-        artistName = " / ".join(artist["name"] for artist in artists)
-        if artistName != "":
-            artistName = "by: " + artistName
+    @staticmethod
+    def FormatInfoOnlyLyric(songInfo:dict, isFull:bool=True) -> SongLyric:
+        arKeys = ['artists', 'ar']
+        aliasKeys = ['alias']
+        tnsKeys = ['translate', 'tns', 'transName', 'transNames']
 
-        artistTrans = " / ".join(
-            " / ".join(artist["tns"]) for artist in artists
-        )
-        if artistTrans != "":
-            artistTrans = "by: " + artistTrans
+        songName = songInfo['name']
+        trans = TryGetValueFromKeys(songInfo, tnsKeys)
+        trans = FormatMultiInfos(trans)
+        alias = TryGetValueFromKeys(songInfo, aliasKeys)
+        alias = FormatMultiInfos(alias)
+        if alias:
+            if not trans:
+                trans = ""
+            trans += f"({alias})"
+        
+        artists = TryGetValueFromKeys(songInfo, arKeys)
+        artists, artistTrans = LyricManager.GetFormatedArtists(artists)
 
-        result = NULL_LYRIC
-        result[1.0] = {"Lyric": name, "Translation": trans}
-        result[float("inf")] = {"Lyric": artistName, "Translation": artistTrans}
+        result = SongLyric()
+        if isFull:
+            result[0.0] = "无歌词"
+            result["-inf"] = songName, trans
+            result["inf"] = artists, artistTrans
+        else:
+            if not trans:
+                trans = ""
+            result["-inf"] = f"{songName}\t{artists}", f"{trans}\t{artistTrans}"
         return result
     
     @staticmethod
@@ -293,19 +398,19 @@ class LyricManager(Singleton, LoopObject):
 
     # region classmethod
     @classmethod
-    def GetInfoOnlyLyric(cls) -> dict[float, dict[str, str]]:
+    def GetInfoOnlyLyric(cls, isFull:bool=True) -> SongLyric:
         # try load from local web data and local library data
         for localInfo in cls.LocalMusicInfo:
             if cls.Song not in localInfo.keys():
                 continue
             songInfo = localInfo[cls.Song]
-            result = cls.FormatInfoOnlyLyric(songInfo)
+            result = cls.FormatInfoOnlyLyric(songInfo, isFull)
             if not result:
                 continue
             return result
         # else try load from online data
         songInfo = track.GetTrackDetail(cls.Song)
-        result = cls.FormatInfoOnlyLyric(songInfo)
+        result = cls.FormatInfoOnlyLyric(songInfo, isFull)
         return result
     
     @classmethod
@@ -335,10 +440,7 @@ class LyricManager(Singleton, LoopObject):
         if roma and translation:
                 translation = "译：" + translation + "\t|\t"
                 translation += "音：" + roma
-        return {
-            "Lyric": ReplaceAll(lyric, "  ", " "), 
-            "Translation": ReplaceAll(translation, "  ", " ")
-        }
+        return ReplaceAll(lyric, "  ", " "), ReplaceAll(translation, "  ", " ")
 
     @classmethod
     def PreformatJapLyric(cls, lyric:str, roma:str):
@@ -359,8 +461,8 @@ class LyricManager(Singleton, LoopObject):
         transTimeline:dict[float, str],
         romaTimeline:dict[float, str],
         isJap:bool
-    ) -> dict[float, dict[str, str]]:
-        result = dict[float, dict[str, str]]()
+    ) -> SongLyric:
+        result = SongLyric()
         if not lrcTimeline:
             return result
         for time in lrcTimeline.keys():
@@ -381,7 +483,7 @@ class LyricManager(Singleton, LoopObject):
         return result
 
     @classmethod
-    def GetLyric(cls, isOnline:bool) -> dict[float, dict[str, str]]:
+    def GetLyric(cls, isOnline:bool) -> SongLyric:
         if isOnline:
             sources = [cls.LyricSource.Online]
             Debug.Log("Syncing lyric online")
@@ -397,17 +499,20 @@ class LyricManager(Singleton, LoopObject):
             result = source.getLyric()
             if not result:
                 continue
-            synced = source == cls.LyricSource.Online
-            cls.Synced = synced
-            if synced:
+            if source == cls.LyricSource.InfoOnly:
+                return result
+            songInfo = cls.GetInfoOnlyLyric(False)
+            if source == cls.LyricSource.Online:
+                cls.Synced = True
                 Debug.Log("Sync lyric online succeed")
+            result.update(songInfo)
             return result
         if isOnline:
             Debug.Log("Sync lyric online failed")
     
     @classmethod
     def GetLyricFromDataFunc(cls, getter:classmethod):
-        def GetLyricFromData(getter:classmethod) -> dict[float, dict[str, str]]:
+        def GetLyricFromData(getter:classmethod) -> SongLyric:
             try:
                 data = getter()
                 if not data:
@@ -494,18 +599,17 @@ class LyricManager(Singleton, LoopObject):
         if not os.path.isdir(CACHE_DIR):
             os.makedirs(CACHE_DIR)
         cache = f'{CACHE_DIR}{cls.Song}.json'
-        dump = json.dumps(cls.Lyric)
+        dump = json.dumps(dict(cls.Lyric), sort_keys=True)
         if os.path.isfile(cache):
             with open(cache,'r',encoding='utf-8') as f:
                 if f.readable() and f.read() == dump:
                     return
-
         with open(cache,'w',encoding='utf-8') as f:
             f.write(dump)
         LyricManager.LastCache = datetime.now().timestamp()
     
     @classmethod
-    def LoadLyricCache(cls) -> dict[float, dict[str, str]]:
+    def LoadLyricCache(cls) -> SongLyric:
         if not os.path.isdir(CACHE_DIR):
             return
         cacheFile = f'{CACHE_DIR}{cls.Song}.json'
@@ -513,9 +617,7 @@ class LyricManager(Singleton, LoopObject):
             return
         with open(cacheFile,'r',encoding='utf-8') as f:
             data = json.loads(f.read())
-        lyrics = dict()
-        for key in data:
-            lyrics[float(key)] = data[key]
+        lyrics = SongLyric(data)
         return lyrics
 
     @classmethod

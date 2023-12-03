@@ -2,7 +2,7 @@
 # Author: WayneFerdon wayneferdon@hotmail.com
 # Date: 2023-04-11 19:55:43
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-11-20 10:39:05
+# LastEditTime: 2023-12-03 09:30:48
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\LyricManager.py
 # ----------------------------------------------------------------
 # Copyright (c) 2023 by Wayne Ferdon Studio. All rights reserved.
@@ -270,7 +270,7 @@ class LyricManager(Singleton, LoopObject):
             nameList.append(name)
             if "tns" in artist.keys():
                 translation = FormatMultiInfos(artist["tns"])
-            if not translation:
+            else:
                 translation = name
             translationList.append(translation)
         
@@ -410,7 +410,7 @@ class LyricManager(Singleton, LoopObject):
                 continue
             return result
         # else try load from online data
-        songInfo = track.GetTrackDetail(cls.Song)
+        songInfo = track.GetTrackDetail(cls.Song)['songs'][0]
         result = cls.FormatInfoOnlyLyric(songInfo, isFull)
         return result
     

@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 02:30:29
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-11-20 07:47:02
+# LastEditTime: 2023-12-03 09:20:16
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\ELogMonitor.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -222,6 +222,14 @@ class ELogMonitor(Singleton, LoopObject):
         songJson = info.split(",\"setPlaying\",")[1]
         dic = json.loads(songJson)
         LyricManager.Song = dic["trackIn"]["trackId"]
+        infoCached = False
+        for database in LyricManager.LocalMusicInfo:
+            if LyricManager.Song in database.keys():
+                infoCached = True
+                break
+        if not infoCached:
+            LyricManager.LocalMusicInfo[0][str(LyricManager.Song)] = dic["trackIn"]["track"]
+        
         LyricManager.SongDuration = dic["trackIn"]["track"]["duration"]
         LyricManager.Synced = False
         if not self.IsInitializing:

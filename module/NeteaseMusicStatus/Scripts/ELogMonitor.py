@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 02:30:29
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-12-03 09:20:16
+# LastEditTime: 2023-12-05 04:10:11
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\ELogMonitor.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -275,4 +275,9 @@ class ELogMonitor(Singleton, LoopObject):
             # bytesData = (!a^e)(bcd^fgh) (a)(b) (!c)(!d)
             bytesData = hexsDigit*16 + data//64*4 + ~(data//16)%4
             decoded += int(bytesData).to_bytes()
-        return decoded.decode(encoding="utf-8")
+        try:
+            decoded = decoded.decode(encoding="utf-8")
+        except:
+            Debug.LogError(traceback.format_exc())
+            decoded = str()
+        return decoded

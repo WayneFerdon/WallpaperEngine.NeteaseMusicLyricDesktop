@@ -2,7 +2,7 @@
 # Author: WayneFerdon wayneferdon@hotmail.com
 # Date: 2023-04-11 19:55:43
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-12-03 09:30:48
+# LastEditTime: 2023-12-05 04:11:16
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\LyricManager.py
 # ----------------------------------------------------------------
 # Copyright (c) 2023 by Wayne Ferdon Studio. All rights reserved.
@@ -167,7 +167,7 @@ class LyricManager(Singleton, LoopObject):
     @property
     def Hanzi2KanjiLib(cls):
         if not cls.__Hanzi2KanjiLib__:
-            libJson = ""
+            libJson = str()
             with open(KANJI_LIB, "r") as kanjiLib:
                 for data in kanjiLib.readlines():
                     libJson += data
@@ -258,7 +258,7 @@ class LyricManager(Singleton, LoopObject):
     @staticmethod
     def GetFormatedArtists(artists:list[dict]):
         if len(artists) == 0:
-            return "", ""
+            return str(), str()
         nameList = list()
         translationList = list()
         for artist in artists:
@@ -272,8 +272,9 @@ class LyricManager(Singleton, LoopObject):
                 translation = FormatMultiInfos(artist["tns"])
             else:
                 translation = name
+            if not translation:
+                continue
             translationList.append(translation)
-        
         names = "by: " + " / ".join(nameList)
         translations = "by: " + " / ".join(translationList)
         return names, translations
@@ -291,7 +292,7 @@ class LyricManager(Singleton, LoopObject):
         alias = FormatMultiInfos(alias)
         if alias:
             if not trans:
-                trans = ""
+                trans = str()
             trans += f"({alias})"
         
         artists = TryGetValueFromKeys(songInfo, arKeys)
@@ -304,8 +305,8 @@ class LyricManager(Singleton, LoopObject):
             result["inf"] = artists, artistTrans
         else:
             if not trans:
-                trans = ""
-            result["-inf"] = "", ""
+                trans = str()
+            result["-inf"] = str(), str()
             result["-1"] = f"{songName}\t{artists}", f"{trans}\t{artistTrans}"
         return result
     
@@ -348,18 +349,20 @@ class LyricManager(Singleton, LoopObject):
                 continue
             source = source.replace(keyName, fix["lyricReplace"])
             roma = roma.replace(fix["roma"], fix["romaReplace"])
-        testA = RemoveAll(roma,' ')
-        testA = RemoveAll(testA,'?')
-        testA = RemoveAll(testA,'？')
-        testB = RemoveAll(romaSource,' ')
-        testB = RemoveAll(testB,'?')
-        testB = RemoveAll(testB,'？')
-        if (testA is not None) and (testB is not None) and (testA not in testB):
+        # debug test
+        roma_test = RemoveAll(roma, ' ')
+        roma_test = RemoveAll(roma_test, '?')
+        roma_test = RemoveAll(roma_test, '？')
+        romaSource = RemoveAll(romaSource, ' ')
+        romaSource = RemoveAll(romaSource, '?')
+        romaSource = RemoveAll(romaSource, '？')
+        if roma_test and romaSource and (roma_test not in romaSource):
             Debug.Log('FixHiragana-----------------------')
             Debug.Log('source, roma:', source, roma)
-            Debug.Log('testA:', testA)
-            Debug.Log('testB:', testB)
+            Debug.Log('roma_test:', roma_test)
+            Debug.Log('romaSource_test:', romaSource)
             Debug.Log('End FixHiragana-----------------------')
+        # end debug test
         return source, roma
     
     @staticmethod
@@ -507,7 +510,7 @@ class LyricManager(Singleton, LoopObject):
                 cls.Synced = True
                 Debug.Log("Sync lyric online succeed")
             result.update(songInfo)
-            result["inf"] = "", ""
+            result["inf"] = str(), str()
             return result
         if isOnline:
             Debug.Log("Sync lyric online failed")

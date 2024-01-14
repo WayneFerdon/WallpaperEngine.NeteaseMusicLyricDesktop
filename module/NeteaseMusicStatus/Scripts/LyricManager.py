@@ -2,7 +2,7 @@
 # Author: WayneFerdon wayneferdon@hotmail.com
 # Date: 2023-04-11 19:55:43
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-12-05 04:11:16
+# LastEditTime: 2024-01-14 15:58:57
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\LyricManager.py
 # ----------------------------------------------------------------
 # Copyright (c) 2023 by Wayne Ferdon Studio. All rights reserved.
@@ -336,7 +336,7 @@ class LyricManager(Singleton, LoopObject):
         return orig, roma, isJap
 
     @staticmethod
-    def FixHiragana(source:str, roma:str, romaSource:str):
+    def FixHiragana(source:str, roma:str, orig:str, romaSource:str):
         # NOTE: hard fix for several specific situations
         # TODO: Use the given romaLyric to fix the split
         for hardFix in HARD_FIXS:
@@ -360,7 +360,8 @@ class LyricManager(Singleton, LoopObject):
             Debug.Log('FixHiragana-----------------------')
             Debug.Log('source, roma:', source, roma)
             Debug.Log('roma_test:', roma_test)
-            Debug.Log('romaSource_test:', romaSource)
+            Debug.Log('Orig:', orig)
+            Debug.Log('romaSource:', romaSource)
             Debug.Log('End FixHiragana-----------------------')
         # end debug test
         return source, roma
@@ -419,18 +420,18 @@ class LyricManager(Singleton, LoopObject):
     
     @classmethod
     def GetHiraganaLyric(cls, orig:str, romaOrig:str) -> dict[str, str]:
-        splited = list[str]()
-        for split in cls.SplitLyric(orig):
-            for each in cls.Kakasi.convert(split):
+        converteds = list[str]()
+        for converted in cls.SplitLyric(orig):
+            for each in cls.Kakasi.convert(converted):
                 for text in SplitAll(each["orig"], "(（.*?）){1}"):
-                    splited += cls.Kakasi.convert(text)
+                    converteds += cls.Kakasi.convert(text)
         lrcSplits, romaSplits, isJap = list[str](), list[str](), True
-        for split in splited:
-            orig, hira, roma = split["orig"], split["hira"], split["hepburn"]
-            orig, roma, isJap = cls.GetHiragana(orig, hira, roma, isJap)
+        for converted in converteds:
+            split, hira, roma = converted["orig"], converted["hira"], converted["hepburn"]
+            split, roma, isJap = cls.GetHiragana(split, hira, roma, isJap)
             if isJap:
-                orig, roma = cls.FixHiragana(orig, roma, romaOrig)
-            lrcSplits.append(orig)
+                split, roma = cls.FixHiragana(split, roma, orig, romaOrig)
+            lrcSplits.append(split)
             romaSplits.append(roma)
         return ''.join(lrcSplits), ' '.join(romaSplits)
 

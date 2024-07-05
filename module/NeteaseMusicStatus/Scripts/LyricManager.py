@@ -335,36 +335,45 @@ class LyricManager(Singleton, LoopObject):
             break
         return orig, roma, isJap
 
+    def GetShrinkedRoma(roma:str) -> str:
+        shrinked = RemoveAll(roma, ' ')
+        shrinked = RemoveAll(shrinked, '?')
+        shrinked = RemoveAll(shrinked, '？')
+        return shrinked
+
     @staticmethod
-    def FixHiragana(source:str, roma:str, orig:str, romaSource:str):
+    def FixHiragana(source:str, roma:str, fullSource:str, romaSource:str) -> tuple[str, str]:
         # NOTE: hard fix for several specific situations
         # TODO: Use the given romaLyric to fix the split
+        shrinkedRomaSource = LyricManager.GetShrinkedRoma(romaSource)
+        fixed = roma #.removesuffix(' ')
         for hardFix in HARD_FIXS:
             fix = HARD_FIXS[hardFix]
             keyName = hardFix
             if keyName not in source:
                 continue
             match = fix["romaMatch"]
-            if romaSource and match not in romaSource:
+            if shrinkedRomaSource and match not in romaSource:
                 continue
             source = source.replace(keyName, fix["lyricReplace"])
-            roma = roma.replace(fix["roma"], fix["romaReplace"])
+            fixed = fixed.replace(fix["roma"], fix["romaMatch"])
+        FixDebug = True
         # debug test
-        roma_test = RemoveAll(roma, ' ')
-        roma_test = RemoveAll(roma_test, '?')
-        roma_test = RemoveAll(roma_test, '？')
-        romaSource = RemoveAll(romaSource, ' ')
-        romaSource = RemoveAll(romaSource, '?')
-        romaSource = RemoveAll(romaSource, '？')
-        if roma_test and romaSource and (roma_test not in romaSource):
-            Debug.Log('FixHiragana-----------------------')
-            Debug.Log('source, roma:', source, roma)
-            Debug.Log('roma_test:', roma_test)
-            Debug.Log('Orig:', orig)
-            Debug.Log('romaSource:', romaSource)
-            Debug.Log('End FixHiragana-----------------------')
-        # end debug test
-        return source, roma
+        if FixDebug:
+            if source[-1] == 'は' and len(source) > 1 and fixed[-2:] == 'ha':
+                temp = fixed.removesuffix('ha') + 'wa'
+                if temp in romaSource:
+                    fixed = temp
+            shrinked = LyricManager.GetShrinkedRoma(fixed)
+            if shrinked and shrinkedRomaSource and (shrinked not in shrinkedRomaSource):
+                Debug.Log('FixHiragana-----------------------')
+                Debug.Log('Source, Roma, Fixed, Shrinked:', source, roma, fixed, shrinked)
+                Debug.Log('FullLyric:', fullSource)
+                Debug.Log('RomaFromSource:', romaSource)
+                Debug.Log('ShrinkedRomaFromSource:', shrinkedRomaSource)
+                Debug.Log('End FixHiragana-----------------------')
+            # end debug test
+        return source, fixed
     
     @staticmethod
     def SplitLyric(lyric:str) -> list[str]:

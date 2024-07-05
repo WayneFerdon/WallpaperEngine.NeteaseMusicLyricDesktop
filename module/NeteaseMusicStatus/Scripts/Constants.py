@@ -35,7 +35,7 @@ TEMP_DATABASE = os.path.join(TEMP_DIR, "index.dat")
 TEMP_DATABASE_CURSER_KEY = "SELECT path, type FROM cache"
 
 CACHE_DIR = '../cache/'
-STATE_OUTPUT = "../CurrentState.html"
+STATE_OUTPUT = "../CurrentState.json"
 KANJI_LIB = "Hanzi2Kanji.json"
 
 EMPTY_LYRIC = {"Lyric": "", "Translation": ""}
@@ -47,32 +47,37 @@ HARD_FIXS = {
         'roma': 'kun',
         'romaMatch': 'ki mi',
         'lyricReplace': '君（きみ）',
-        'romaReplace': 'kimi',
     },
     '人（にん）':{
         'roma': 'nin',
         'romaMatch': 'hi to',
         'lyricReplace': '人（ひと）',
-        'romaReplace': 'hito',
     },
     '失（う）':{
         'roma': 'u',
         'romaMatch': 'u shi na',
         'lyricReplace': '失（うしな）',
-        'romaReplace': 'ushina',
     },
     '泡沫（ほうまつ）':{
         'roma': 'houmotsu',
         'romaMatch': 'u ta ka ta',
         'lyricReplace': '泡沫（うたかた）',
-        'romaReplace': 'utakata',
     },
     '齣（こま）':{
         'roma': 'koma',
         'romaMatch': 'de',
         'lyricReplace': '齣（で）',
-        'romaReplace': 'de',
-    }
+    },
+    '日（にち）':{
+        'roma': 'nichi',
+        'romaMatch': 'hi',
+        'lyricReplace': '日（ひ）',
+    },
+    'LYRIC_TO_BE_FIXED':{
+        'roma': 'ROMA_TO_BE_FIXED',
+        'romaMatch': 'FIX_IF_MATCH_IN_ROMA_SOURCE',
+        'lyricReplace': 'FIX_USING_THIS_REPLACEMENT',
+    },
 }
 # endregion paths and default values
 # endregion constants

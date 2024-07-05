@@ -31,7 +31,7 @@ function LyricInit() {
 }
 
 function LyricUpdate() {
-    $('#NeteaseState').load('module/NeteaseMusicStatus/CurrentState.html');
+    $('#NeteaseState').load('module/NeteaseMusicStatus/CurrentState.json');
     current = JSON.parse($('#NeteaseState').html())
     UpdateLyric(current)
 }

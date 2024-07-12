@@ -73,6 +73,41 @@ HARD_FIXS = {
         'romaMatch': 'hi',
         'lyricReplace': '日（ひ）',
     },
+    '士（さむらい）':{
+        'roma': 'samurai',
+        'romaMatch': 'shi',
+        'lyricReplace': '士（し）',
+    },
+    '落ち着（おちつ）':{
+        'roma': 'ochitsu',
+        'romaMatch': 'o chi tsu',
+        'lyricReplace': '落（お）ち着（つ）',
+    },
+    '時（とき）':{
+        'roma': 'toki',
+        'romaMatch': 'ji',
+        'lyricReplace': '時（じ）',
+    },
+    '今日（こんにち）':{
+        'roma': 'konnnichi',
+        'romaMatch': 'kyo',
+        'lyricReplace': '今日（きょ）',
+    },
+    '今年（こんねん）':{
+        'roma': 'konnnenn',
+        'romaMatch': 'ko to shi',
+        'lyricReplace': '今年（ことし）',
+    },
+    '経（へ）':{
+        'roma': 'he',
+        'romaMatch': 'ta',
+        'lyricReplace': '経（た）',
+    },
+    '点（てん）':{
+        'roma': 'tenn',
+        'romaMatch': 'tsu',
+        'lyricReplace': '点（つ）',
+    },
     'LYRIC_TO_BE_FIXED':{
         'roma': 'ROMA_TO_BE_FIXED',
         'romaMatch': 'FIX_IF_MATCH_IN_ROMA_SOURCE',

@@ -171,7 +171,7 @@ class LyricManager(Singleton, LoopObject):
             with open(KANJI_LIB, "r") as kanjiLib:
                 for data in kanjiLib.readlines():
                     libJson += data
-            cls.__Hanzi2KanjiLib__ = dict[str, str](json.loads(libJson))
+            cls.__Hanzi2KanjiLib__ = dict[str, list[str]](json.loads(libJson))
         return cls.__Hanzi2KanjiLib__
 
     @classmethod
@@ -380,10 +380,14 @@ class LyricManager(Singleton, LoopObject):
         lyric = lyric\
             .replace("(", "（")\
             .replace(")", "）")\
+            .replace("｢", "「")\
+            .replace("｣", "」")\
             .replace(" ", "　")\
             .replace("　", "//split//　//split//")\
             .replace("、", "//split//、//split//")\
-            .replace("。", "//split//、//split//")
+            .replace("。", "//split//。//split//")\
+            .replace("「", "//split//「//split//")\
+            .replace("」", "//split//」//split//")
         lyricSplited = re.split("//split//", lyric)
         result = list[str]()
         index = -1
@@ -442,6 +446,7 @@ class LyricManager(Singleton, LoopObject):
                 split, roma = cls.FixHiragana(split, roma, orig, romaOrig)
             lrcSplits.append(split)
             romaSplits.append(roma)
+
         return ''.join(lrcSplits), ' '.join(romaSplits)
 
     @classmethod

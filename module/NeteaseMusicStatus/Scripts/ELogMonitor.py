@@ -184,7 +184,7 @@ class ELogMonitor(Singleton, LoopObject):
         info = splited[1]
         splited = re.split("\] \[", splited[0])
         ms = re.split(":", splited[0])[3]
-        time = datetime.strptime(splited[1][:-2] + "." + ms[:-3], "%Y-%m-%d %H:%M:%S.%f").astimezone()
+        time = datetime.strptime(splited[1][:-2] + "." + ms[0:min(6,len(ms))], "%Y-%m-%d %H:%M:%S.%f").astimezone()
         return time, info
 
     def CheckLogType(self, content:str) -> LogType:

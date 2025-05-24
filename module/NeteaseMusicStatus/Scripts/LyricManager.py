@@ -300,7 +300,7 @@ class LyricManager(Singleton, LoopObject):
 
         result = SongLyric()
         if isFull:
-            result[0.0] = "无歌词"
+            result[0.0] = "无歌词", ""
             result["-inf"] = songName, trans
             result["inf"] = artists, artistTrans
         else:
@@ -362,7 +362,7 @@ class LyricManager(Singleton, LoopObject):
         if FixDebug:
             if source[-1] == 'は' and len(source) > 1 and fixed[-2:] == 'ha':
                 temp = fixed.removesuffix('ha') + 'wa'
-                if temp in romaSource:
+                if romaSource and temp in romaSource:
                     fixed = temp
             shrinked = LyricManager.GetShrinkedRoma(fixed)
             if shrinked and shrinkedRomaSource and (shrinked not in shrinkedRomaSource):
@@ -578,9 +578,13 @@ class LyricManager(Singleton, LoopObject):
                         continue
                 with open(result[0],'r',encoding='utf-8') as f:
                     data = json.loads(f.read())
-                splited = str(data['klyric']['lyric']).split('song?id=')
+                print(data)
+                try:
+                    splited = str(data['klyric']['lyric']).split('song?id=')
+                except KeyError:
+                    continue
                 if len(splited) < 2:
-                    return None
+                    continue
                 splited = splited[1].split(']')
                 id = int(splited[0])
                 if id == cls.Song:

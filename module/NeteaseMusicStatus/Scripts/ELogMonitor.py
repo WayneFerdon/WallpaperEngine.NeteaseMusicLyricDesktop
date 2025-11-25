@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 02:30:29
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2025-10-07 15:11:37
+# LastEditTime: 2025-11-25 10:31:48
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\ELogMonitor.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -234,7 +234,8 @@ class ELogMonitor(Singleton, LoopObject):
                 infoCached = True
                 break
         if not infoCached:
-            LyricManager.LocalMusicInfo[0][str(LyricManager.Song)] = dic["trackIn"]["track"]
+            print(dic)
+            LyricManager.LocalMusicInfo[0][str(LyricManager.Song)] = dic["track"]
         
         LyricManager.SongDuration = dic["track"]["duration"]
         LyricManager.Synced = False

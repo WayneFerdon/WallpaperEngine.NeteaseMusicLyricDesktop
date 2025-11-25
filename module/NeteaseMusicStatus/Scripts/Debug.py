@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 00:43:33
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-11-15 00:22:50
+# LastEditTime: 2025-11-25 11:17:25
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\Debug.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -19,6 +19,7 @@ import os
 # region log display switch
 ENABLE_ELOG_DISPLAY = True
 ENABLE_LOG = True
+MAX_LOG_LINES = 5000
 PY_LOG_PATH = "../PyLog.log"
 # endregion log display switch
 
@@ -101,8 +102,15 @@ class Debug():
 
         SetCMDDisplay(type)
         print(logInfo)
-        with open(PY_LOG_PATH, "a", encoding= "utf-8") as logFile:
+        with open(PY_LOG_PATH, "a+", encoding= "utf-8") as logFile:
             logFile.write(logInfo + "\n")
+            if (MAX_LOG_LINES > 0):
+                logFile.seek(0)
+                lines = logFile.readlines()
+                if (len(lines) > MAX_LOG_LINES):
+                    logFile.seek(0)
+                    logFile.truncate()
+                    logFile.writelines(lines[-MAX_LOG_LINES:])
         ResetCMDDisplay()
         return logInfo
 

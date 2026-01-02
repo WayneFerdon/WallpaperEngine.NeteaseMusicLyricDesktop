@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 02:30:29
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2025-11-25 10:31:48
+# LastEditTime: 2026-01-03 00:27:19
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\ELogMonitor.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -65,7 +65,7 @@ class LogType(PropertyEnum):
     @classmethod
     def __init_properties__(cls) -> None:
         cls.ExitApp.key = r',{"actionId":"exitApp"},'
-        cls.SetPlaying.key = r'playOneTrackInPlayingList'
+        cls.SetPlaying.key = r'checkPlayPrivilege'
         cls.SetPosition.key = r'setPlayingPosition'
         cls.SetPlayState.key = r'native播放state'
 
@@ -224,10 +224,10 @@ class ELogMonitor(Singleton, LoopObject):
     def OnSetPlaying(self, time:datetime, info:str):
         if not info:
             return False
-        songJson = info
+        songJson = info.replace(',"originResourceType","track","scene",', '')
         dic = json.loads(songJson)
         Debug.LogHigh("SetPlaying Info:", dic)
-        LyricManager.Song = dic["track"]["id"]
+        LyricManager.Song = dic["id"]
         infoCached = False
         for database in LyricManager.LocalMusicInfo:
             if LyricManager.Song in database.keys():
@@ -235,9 +235,9 @@ class ELogMonitor(Singleton, LoopObject):
                 break
         if not infoCached:
             print(dic)
-            LyricManager.LocalMusicInfo[0][str(LyricManager.Song)] = dic["track"]
+            LyricManager.LocalMusicInfo[0][str(LyricManager.Song)] = dic
         
-        LyricManager.SongDuration = dic["track"]["duration"]
+        LyricManager.SongDuration = dic["duration"]
         LyricManager.Synced = False
         if not self.IsInitializing:
             LyricManager.PrepareLyric()

@@ -2,7 +2,7 @@
 # Author: WayneFerdon wayneferdon@hotmail.com
 # Date: 2023-04-11 19:55:43
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2024-01-14 15:58:57
+# LastEditTime: 2026-01-03 00:28:17
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\LyricManager.py
 # ----------------------------------------------------------------
 # Copyright (c) 2023 by Wayne Ferdon Studio. All rights reserved.
@@ -194,13 +194,13 @@ class LyricManager(Singleton, LoopObject):
         songData = dict[str, list[str]]()
         for title, result in results:
             try:
-                if not result or result == "":
+                if not result or result.replace(' ','') == "":
                     continue
                 result = result.removeprefix('music:')
                 data = json.loads(result)
                 data['name'] = title
             except Exception:
-                Debug.LogError(traceback.format_exc())
+                Debug.LogWarning(traceback.format_exc())
                 continue
             idKeys = ['id', 'musicId']
             id = TryGetValueFromKeys(songData, idKeys)

@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 02:30:29
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2026-01-05 00:40:22
+# LastEditTime: 2026-01-05 01:05:30
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\ELogMonitor.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -56,13 +56,8 @@ class ELogMonitor(Singleton, LoopObject):
         super().__init__()
         table = bytearray(256)
         for i in range(256):
-            # data = abcdefgh
-            # hexsDigit = (!a^e)(bcd^fgh)
-            hexsDigit = ((i // 16) ^ (i % 16) + 8) % 16
-            # bytesData = (!a^e)(bcd^fgh) (a)(b) (!c)(!d)
-            bytesData = hexsDigit * 16 + i // 64 * 4 + ~(i // 16) % 4
-            table[i] = bytesData & 0xFF  # 确保结果在一个字节内
-            # table[i] = int(bytesData).to_bytes()
+            _0_3, _4_7 = i >> 0 & 0xF, i >> 4 & 0xF
+            table[i] = (_4_7 ^ 0x3) | ((_4_7 ^ 0x8 ^ _0_3) << 4)
         self.DecodeTable = bytes(table)
 
     def OnStart(self):

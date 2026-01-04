@@ -19,7 +19,7 @@ import os
 # region log display switch
 ENABLE_ELOG_DISPLAY = True
 ENABLE_LOG = True
-MAX_LOG_LINES = 500000
+MAX_LOG_LINES = 10000
 PY_LOG_PATH = "../PyLog.log"
 # endregion log display switch
 

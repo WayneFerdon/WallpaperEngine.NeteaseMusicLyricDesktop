@@ -2,7 +2,7 @@
 # Author: WayneFerdon wayneferdon@hotmail.com
 # Date: 2023-04-11 19:55:43
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2026-01-03 00:28:17
+# LastEditTime: 2026-01-05 00:03:53
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\LyricManager.py
 # ----------------------------------------------------------------
 # Copyright (c) 2023 by Wayne Ferdon Studio. All rights reserved.
@@ -285,6 +285,8 @@ class LyricManager(Singleton, LoopObject):
         aliasKeys = ['alias']
         tnsKeys = ['translate', 'tns', 'transName', 'transNames']
 
+        if 'name' not in songInfo.keys():
+            return None
         songName = songInfo['name']
         trans = TryGetValueFromKeys(songInfo, tnsKeys)
         trans = FormatMultiInfos(trans)
@@ -297,7 +299,6 @@ class LyricManager(Singleton, LoopObject):
         
         artists = TryGetValueFromKeys(songInfo, arKeys)
         artists, artistTrans = LyricManager.GetFormatedArtists(artists)
-
         result = SongLyric()
         if isFull:
             result[0.0] = "无歌词", ""
@@ -578,7 +579,6 @@ class LyricManager(Singleton, LoopObject):
                         continue
                 with open(result[0],'r',encoding='utf-8') as f:
                     data = json.loads(f.read())
-                print(data)
                 try:
                     splited = str(data['klyric']['lyric']).split('song?id=')
                 except KeyError:

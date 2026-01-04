@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 02:30:29
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2026-01-03 00:27:19
+# LastEditTime: 2026-01-04 23:57:19
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\ELogMonitor.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -26,53 +26,24 @@ from LyricManager import LyricManager
 from PropertyEnum import *
 from collections.abc import Callable
 
-class LogModule(PropertyEnum):
-    App = 0
-    Playing = 1
-    
-    @enumproperty
-    def key(self) -> str: ...
-
-    @classmethod
-    def __init_properties__(cls) -> None:
-        cls.App.key = "app"
-        cls.Playing.key = "playing"
-        return super().__init_properties__()
-
 class LogType(PropertyEnum):
     Undefined = -1
     ExitApp = 0
     SetPlaying = 1
-    Load = 2
-    SetPosition = 3
-    SetPlayState = 4
-    # Pause = 5
+    SetPosition = 2
+    SetPlayState = 3
 
     @enumproperty 
     def method(self) -> Callable[[str], bool]: ...
     @enumproperty
     def key(self) -> str: ...
-    @enumproperty
-    def module(self) -> LogModule: ...
-
-    def GetFullKey(self) -> str:
-        if not self.module:
-            return None
-        if self == LogType.ExitApp:
-            return "【app】,{\"actionId\":\"exitApp\"},"
-        return f"【{self.module.key}】,\"{self.key}\","
 
     @classmethod
     def __init_properties__(cls) -> None:
-        cls.ExitApp.key = r',{"actionId":"exitApp"},'
-        cls.SetPlaying.key = r'checkPlayPrivilege'
-        cls.SetPosition.key = r'setPlayingPosition'
-        cls.SetPlayState.key = r'native播放state'
-
-        cls.ExitApp.module = LogModule.App
-        cls.SetPlaying.module = LogModule.Playing
-        cls.SetPosition.module = LogModule.Playing
-        cls.SetPlayState.module = LogModule.Playing
+        cls.ExitApp.key = '【app】,{"actionId":"exitApp"},'
+        cls.SetPlaying.key = '【曙光点位】,'
+        cls.SetPosition.key = '【playing】,"setPlayingPosition",'
+        cls.SetPlayState.key = '【playing】,"native播放state",'
 
         cls.ExitApp.method = ELogMonitor.Instance.OnExitApp
         cls.SetPlaying.method = ELogMonitor.Instance.OnSetPlaying
@@ -180,18 +151,19 @@ class ELogMonitor(Singleton, LoopObject):
             DisplayManager.WriteOutput(EXIT_STATE_OUTPUT)
 
     def GetLogInfoWithTime(self, content:str, state:LogType):
-        splited = re.split(state.GetFullKey(), content)
+        splited = re.split(state.key, content)
         info = splited[1]
         splited = re.split("\] \[", splited[0])
         ms = re.split(":", splited[0])[3]
-        time = datetime.strptime(splited[1][:-2] + "." + ms[0:min(6,len(ms))], "%Y-%m-%d %H:%M:%S.%f").astimezone()
+        time = splited[1][:-2] + "." + ms[0:min(6,len(ms))]
+        time = datetime.strptime(time, "%Y-%m-%d %H:%M:%S.%f").astimezone()
         return time, info
 
     def CheckLogType(self, content:str) -> LogType:
         for state in LogType:
-            if not state or not state.GetFullKey():
+            if not state or not state.key:
                 continue
-            if state.GetFullKey() not in content:
+            if state.key not in content:
                 continue
             Debug.LogHigh(content)
             time, info = self.GetInfoLog(content, state)
@@ -224,20 +196,16 @@ class ELogMonitor(Singleton, LoopObject):
     def OnSetPlaying(self, time:datetime, info:str):
         if not info:
             return False
-        songJson = info.replace(',"originResourceType","track","scene",', '')
-        dic = json.loads(songJson)
-        Debug.LogHigh("SetPlaying Info:", dic)
-        LyricManager.Song = dic["id"]
+        dic = json.loads(info)['data']
+        LyricManager.Song, LyricManager.SongDuration = dic["id"], dic["resource_time"]
         infoCached = False
         for database in LyricManager.LocalMusicInfo:
             if LyricManager.Song in database.keys():
                 infoCached = True
                 break
         if not infoCached:
-            print(dic)
             LyricManager.LocalMusicInfo[0][str(LyricManager.Song)] = dic
         
-        LyricManager.SongDuration = dic["duration"]
         LyricManager.Synced = False
         if not self.IsInitializing:
             LyricManager.PrepareLyric()

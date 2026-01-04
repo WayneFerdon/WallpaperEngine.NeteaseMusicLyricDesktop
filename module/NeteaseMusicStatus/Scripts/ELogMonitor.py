@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-11-22 02:30:29
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2026-01-04 23:57:19
+# LastEditTime: 2026-01-05 00:40:22
 # FilePath: \NeteaseMusic\module\NeteaseMusicStatus\Scripts\ELogMonitor.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -52,6 +52,19 @@ class LogType(PropertyEnum):
         return super().__init_properties__()
 
 class ELogMonitor(Singleton, LoopObject):
+    def __init__(self):
+        super().__init__()
+        table = bytearray(256)
+        for i in range(256):
+            # data = abcdefgh
+            # hexsDigit = (!a^e)(bcd^fgh)
+            hexsDigit = ((i // 16) ^ (i % 16) + 8) % 16
+            # bytesData = (!a^e)(bcd^fgh) (a)(b) (!c)(!d)
+            bytesData = hexsDigit * 16 + i // 64 * 4 + ~(i // 16) % 4
+            table[i] = bytesData & 0xFF  # 确保结果在一个字节内
+            # table[i] = int(bytesData).to_bytes()
+        self.DecodeTable = bytes(table)
+
     def OnStart(self):
         super().OnStart()
         Debug.Log('ELogMonitor.OnStart')
@@ -242,14 +255,7 @@ class ELogMonitor(Singleton, LoopObject):
     @staticmethod
     def Decode(datas:list[bytes]) -> str:
         # decode data from .elog file encoding to utf-8
-        decoded = bytes()
-        for data in datas:
-            # data = abcdefgh
-            # hexsDigit = (!a^e)(bcd^fgh)
-            hexsDigit = ((data//16) ^ (data%16)+8)%16
-            # bytesData = (!a^e)(bcd^fgh) (a)(b) (!c)(!d)
-            bytesData = hexsDigit*16 + data//64*4 + ~(data//16)%4
-            decoded += int(bytesData).to_bytes()
+        decoded = bytes(ELogMonitor.Instance.DecodeTable[b] for b in datas)
         while True:
             try:
                 return decoded.decode(encoding="utf-8")

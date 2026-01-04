@@ -123,12 +123,3 @@ class PLAY_STATE(Enum):
     PLAYING = 1
     EXITED = 2
 
-# class LOG_VALID_INFO(Enum):
-#     NONE = 0
-#     APPEXIT = 1
-#     PLAY = 2
-#     LOAD = 3
-#     SEEKPOS = 4
-#     RESUME = 5
-#     PAUSE = 6
-# endregion enums
